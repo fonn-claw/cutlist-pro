@@ -16,6 +16,7 @@ import { CutPieceList } from '@/components/cuts/CutPieceList';
 import { BulkAddForm } from '@/components/cuts/BulkAddForm';
 import { KerfInput } from '@/components/settings/KerfInput';
 import { CuttingDiagramList } from '@/components/visualization/CuttingDiagramList';
+import { SummaryDashboard } from '@/components/summary/SummaryDashboard';
 
 export default function Home() {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -149,27 +150,7 @@ export default function Home() {
         <MainArea>
           {optimizationResult && (
             <div className="space-y-4">
-              <div className="bg-surface rounded-lg border border-border p-4">
-                <h2 className="text-lg font-semibold text-text-primary mb-2">Optimization Result</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <div className="text-text-secondary">Boards Used</div>
-                    <div className="text-xl font-bold text-text-primary">{optimizationResult.summary.totalBoards}</div>
-                  </div>
-                  <div>
-                    <div className="text-text-secondary">Pieces Placed</div>
-                    <div className="text-xl font-bold text-text-primary">{optimizationResult.summary.placedPieces}/{optimizationResult.summary.totalPieces}</div>
-                  </div>
-                  <div>
-                    <div className="text-text-secondary">Waste</div>
-                    <div className="text-xl font-bold text-text-primary">{optimizationResult.summary.wastePercentage.toFixed(1)}%</div>
-                  </div>
-                  <div>
-                    <div className="text-text-secondary">Utilization</div>
-                    <div className="text-xl font-bold text-accent">{(100 - optimizationResult.summary.wastePercentage).toFixed(1)}%</div>
-                  </div>
-                </div>
-              </div>
+              <SummaryDashboard boards={boards} result={optimizationResult} />
               {optimizationResult.unplacedPieces.length > 0 && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">
                   Warning: {optimizationResult.unplacedPieces.length} piece(s) could not be placed. Check that your boards are large enough.
