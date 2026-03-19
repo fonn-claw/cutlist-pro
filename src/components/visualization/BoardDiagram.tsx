@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import type { BoardLayout, PlacedPiece } from '@/lib/types';
+import type { AnimationPhase } from '@/hooks/useAnimationSequence';
 import { formatDimension } from '@/lib/units';
 import { calculateViewBox } from '@/lib/visualization-utils';
+import { computeSlideOrigin } from '@/lib/animation-utils';
 import { useUnits } from '@/contexts/UnitContext';
 import { useZoomPan } from '@/hooks/useZoomPan';
 import { PieceRect } from './PieceRect';
@@ -14,9 +16,13 @@ interface BoardDiagramProps {
   layout: BoardLayout;
   boardIndex: number;
   totalBoards: number;
+  activePieceKeys?: Set<string>;
+  wasteVisible?: boolean;
+  animPhase?: AnimationPhase;
+  skipMode?: boolean;
 }
 
-export function BoardDiagram({ layout, boardIndex, totalBoards }: BoardDiagramProps) {
+export function BoardDiagram({ layout, boardIndex, totalBoards, activePieceKeys, wasteVisible, animPhase, skipMode }: BoardDiagramProps) {
   const { units } = useUnits();
   const viewBox = calculateViewBox(layout.width, layout.height);
   const { zoom, panX, panY, containerRef, handlePointerDown, handlePointerMove, handlePointerUp, reset } = useZoomPan();
@@ -24,6 +30,7 @@ export function BoardDiagram({ layout, boardIndex, totalBoards }: BoardDiagramPr
   const [tooltip, setTooltip] = useState<{ piece: PlacedPiece; x: number; y: number } | null>(null);
 
   const handlePieceEnter = (e: React.MouseEvent, piece: PlacedPiece) => {
+    if (animPhase === 'playing') return;
     setTooltip({ piece, x: e.clientX, y: e.clientY });
   };
 
@@ -101,18 +108,28 @@ export function BoardDiagram({ layout, boardIndex, totalBoards }: BoardDiagramPr
               strokeWidth={1}
             />
             {layout.waste.map((region, i) => (
-              <WasteRect key={i} region={region} boardIndex={boardIndex} />
+              <WasteRect key={i} region={region} boardIndex={boardIndex} visible={wasteVisible} />
             ))}
-            {layout.pieces.map((piece, i) => (
-              <PieceRect
-                key={`${piece.pieceId}-${piece.instanceIndex}-${i}`}
-                piece={piece}
-                units={units}
-                onMouseEnter={handlePieceEnter}
-                onMouseMove={handlePieceMove}
-                onMouseLeave={handlePieceLeave}
-              />
-            ))}
+            {layout.pieces.map((piece, i) => {
+              const pieceKey = `${piece.pieceId}-${piece.instanceIndex}`;
+              const isAnimated = activePieceKeys ? activePieceKeys.has(pieceKey) : undefined;
+              const slideFrom = activePieceKeys
+                ? computeSlideOrigin(piece, layout.width, layout.height)
+                : undefined;
+              return (
+                <PieceRect
+                  key={`${piece.pieceId}-${piece.instanceIndex}-${i}`}
+                  piece={piece}
+                  units={units}
+                  animated={isAnimated}
+                  slideFrom={slideFrom}
+                  skipMode={skipMode}
+                  onMouseEnter={handlePieceEnter}
+                  onMouseMove={handlePieceMove}
+                  onMouseLeave={handlePieceLeave}
+                />
+              );
+            })}
           </svg>
         </div>
         {tooltip && (

@@ -25,6 +25,7 @@ export default function Home() {
   const [cutInputMode, setCutInputMode] = useState<'single' | 'bulk'>('single');
   const [kerf, setKerf] = useState<number>(3.175);
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
+  const [resultKey, setResultKey] = useState(0);
 
   const canOptimize = boards.length > 0 && cutPieces.length > 0;
 
@@ -32,6 +33,7 @@ export default function Home() {
     const settings: Settings = { units: 'metric', kerf };
     const result = optimizeCutLayout(boards, cutPieces, settings);
     setOptimizationResult(result);
+    setResultKey(prev => prev + 1);
   }, [boards, cutPieces, kerf]);
 
   const handleKerfChange = useCallback((newKerf: number) => {
@@ -173,7 +175,7 @@ export default function Home() {
                   Warning: {optimizationResult.unplacedPieces.length} piece(s) could not be placed. Check that your boards are large enough.
                 </div>
               )}
-              <CuttingDiagramList result={optimizationResult} />
+              <CuttingDiagramList result={optimizationResult} resultKey={resultKey} />
             </div>
           )}
         </MainArea>

@@ -7,20 +7,33 @@ import { getContrastTextColor } from '@/lib/visualization-utils';
 interface PieceRectProps {
   piece: PlacedPiece;
   units: UnitSystem;
+  animated?: boolean;
+  slideFrom?: { dx: number; dy: number };
+  skipMode?: boolean;
   onMouseEnter?: (e: React.MouseEvent, piece: PlacedPiece) => void;
   onMouseMove?: (e: React.MouseEvent) => void;
   onMouseLeave?: () => void;
 }
 
-export function PieceRect({ piece, units, onMouseEnter, onMouseMove, onMouseLeave }: PieceRectProps) {
+export function PieceRect({ piece, units, animated, slideFrom, skipMode, onMouseEnter, onMouseMove, onMouseLeave }: PieceRectProps) {
   const showLabel = piece.width >= 40 && piece.height >= 20;
   const fontSize = Math.min(piece.width / 8, piece.height / 3, 12);
   const textColor = getContrastTextColor(piece.color);
   const centerX = piece.x + piece.width / 2;
   const centerY = piece.y + piece.height / 2;
 
+  const hasAnimation = animated !== undefined && slideFrom !== undefined;
+  const translateX = hasAnimation ? (animated ? 0 : slideFrom.dx) : 0;
+  const translateY = hasAnimation ? (animated ? 0 : slideFrom.dy) : 0;
+  const opacity = hasAnimation ? (animated ? 1 : 0) : 1;
+
   return (
-    <g>
+    <g style={{
+      transform: `translate(${translateX}px, ${translateY}px)`,
+      opacity,
+      transition: skipMode ? 'none' : 'transform 400ms ease-out, opacity 300ms ease-out',
+      willChange: hasAnimation && !animated ? 'transform, opacity' : 'auto',
+    }}>
       <rect
         x={piece.x}
         y={piece.y}
