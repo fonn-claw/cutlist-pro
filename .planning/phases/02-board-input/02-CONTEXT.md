@@ -6,36 +6,36 @@
 <domain>
 ## Phase Boundary
 
-This phase delivers the stock board CRUD interface in the sidebar — users can add boards with dimensions, set quantities, select from presets, and edit/remove entries. No cut pieces, no optimization, no visualization — just board management.
+This phase delivers the Board Input UI: a form in the sidebar where users can add, edit, and remove stock boards with dimensions and quantities, plus a preset selector for common board sizes. No cut pieces, no optimization — just board management.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Form Layout & Interaction
-- Inline add form at top of board list in sidebar — length, width, quantity fields with an "Add" button
-- Board entries display as compact cards below the form — show dimensions (formatted per unit system), quantity, and action buttons
-- Edit mode: clicking a board entry makes it inline-editable (same fields as add form) — no modal dialogs
-- Delete: icon button on each entry with no confirmation for single items (undo would be v2)
+### Board Form Layout
+- Inline form with add button at bottom of sidebar — compact, always visible
+- Board entries displayed as card list with inline edit — click to edit dimensions
+- Preset selector as a dropdown/select above the form — pick preset to auto-fill dimensions
+- Delete via icon button with no confirmation — boards are easy to re-add
 
-### Board Presets
-- Preset dropdown/select above the manual entry form — selecting a preset auto-fills length and width
-- Common presets: 4×8 Plywood (48"×96"), 1×6 (0.75"×5.5"), 1×8 (0.75"×7.25"), 1×10 (0.75"×9.25"), 1×12 (0.75"×11.25"), 2×4 (1.5"×3.5"), 2×6 (1.5"×5.5"), 2×8 (1.5"×7.5"), 2×10 (1.5"×9.25"), 2×12 (1.5"×11.25")
-- Preset names use nominal sizes (e.g., "2×4") but fill in actual dimensions
-- After preset selection, user can still modify dimensions before adding
-
-### State Management
-- Board list stored in React state (useState) at page level — lifted to parent for future optimization access
-- Each board gets a unique ID via crypto.randomUUID()
-- Dimensions entered in current display unit (in or mm), converted to internal mm on add/edit
+### Presets & Data
+- Default presets: 4x8 plywood, 2x4, 1x6, 1x8, 1x10, 1x12 — covers 90% of projects
+- Presets stored as const array in lib/presets.ts — simple, no fetching
+- No name field for boards — dimensions + quantity are sufficient (Board type already defined)
 - Default quantity is 1
 
+### State Management
+- React useState in a BoardContext provider — matches UnitContext pattern from Phase 1
+- Board IDs via crypto.randomUUID()
+- Inline validation on blur — dimensions must be > 0, quantity >= 1
+- Empty state shows "No boards added" with prompt to add or use preset
+
 ### Claude's Discretion
-- Specific styling of board entry cards (padding, borders, hover states)
-- Input field widths and number input behavior (step values, min/max)
-- Exact preset list ordering
-- Empty state message when no boards added yet
+- Exact form field sizing and spacing
+- Add button icon/style
+- Preset dropdown styling details
+- Animation on add/remove
 
 </decisions>
 
@@ -43,30 +43,32 @@ This phase delivers the stock board CRUD interface in the sidebar — users can 
 ## Existing Code Insights
 
 ### Reusable Assets
-- `Board` type from `src/lib/types.ts` — already has id, dimensions (mm), quantity
-- `toInternal()` / `toDisplay()` from `src/lib/units.ts` — convert between display and storage units
-- `formatDimension()` from `src/lib/units.ts` — format mm values for display in current unit
-- `useUnits()` from `src/contexts/UnitContext.tsx` — access current unit system
-- `Sidebar` component from `src/components/layout/Sidebar.tsx` — container for board input
+- `src/lib/types.ts` — Board interface already defined with id, dimensions (mm), quantity
+- `src/contexts/UnitContext.tsx` — UnitProvider and useUnits hook for display formatting
+- `src/lib/units.ts` — formatImperial, formatMetric, parseToMm, formatDimension utilities
+- `src/components/layout/Sidebar.tsx` — Empty sidebar shell ready for board input content
+- `src/components/layout/Header.tsx` — Header with theme/unit toggles
 
 ### Established Patterns
-- `'use client'` directive on interactive components
-- Tailwind dark: variant for theme-aware styling
-- Zinc neutrals + amber accent color palette
+- Client components use "use client" directive
+- Context pattern: createContext + Provider + useX hook (see UnitContext)
+- Semantic color tokens: bg-surface, text-text-primary, border-border, text-accent
+- Tailwind utility classes for styling, no external UI libraries
 
 ### Integration Points
-- Board input lives inside `Sidebar` component
-- Board state needs to be accessible from page level (for future optimization in Phase 4)
-- Dimensions display using `formatDimension()` respecting current unit toggle
+- Board input form lives inside the Sidebar component
+- BoardContext wraps app in layout.tsx alongside UnitProvider and ThemeProvider
+- Board data feeds Phase 4 (Optimization Engine) — must expose boards array
+- useUnits().formatValue() for displaying dimensions, useUnits().toMm() for parsing input
 
 </code_context>
 
 <specifics>
 ## Specific Ideas
 
-- Preset dimensions use actual lumber dimensions, not nominal (e.g., 2×4 is actually 1.5"×3.5")
-- Board entries should feel lightweight and fast — woodworkers are adding multiple boards quickly
-- Number inputs should allow fractional inches for custom sizes (parsed as decimal, stored as mm)
+- Users type decimal inches (e.g., "48"), displayed as proper fractions via formatImperial
+- Preset dimensions should be stored in mm internally, displayed in current unit
+- Board type already has id, dimensions, quantity — no schema changes needed
 
 </specifics>
 
