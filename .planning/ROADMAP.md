@@ -157,6 +157,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 3. Cut List Input | 1/2 | In Progress|  |
 | 4. Optimization Engine | 1/2 | In Progress | - |
 | 5. Static Visualization | 0/2 | Planning complete | - |
-| 6. Animated Visualization | 0/2 | Planning complete | - |
+| 6. Animated Visualization | 1/2 | In Progress|  |
 | 7. Summary Dashboard | 0/0 | Not started | - |
 | 8. Export & Sharing | 0/0 | Not started | - |
