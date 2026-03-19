@@ -43,8 +43,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **VIS-02**: Pieces are color-coded by type and labeled with name/dimensions
 - [x] **VIS-03**: Waste areas shown in distinct pattern/color
 - [ ] **VIS-04**: Animated optimization — pieces slide/fade into position when user clicks "Optimize"
-- [ ] **VIS-05**: User can hover over a piece to see its dimensions and label in a tooltip
-- [ ] **VIS-06**: User can zoom and pan on large layouts
+- [x] **VIS-05**: User can hover over a piece to see its dimensions and label in a tooltip
+- [x] **VIS-06**: User can zoom and pan on large layouts
 
 ### Summary
 
@@ -128,8 +128,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIS-01 | Phase 5: Static Visualization | Complete |
 | VIS-02 | Phase 5: Static Visualization | Complete |
 | VIS-03 | Phase 5: Static Visualization | Complete |
-| VIS-05 | Phase 5: Static Visualization | Pending |
-| VIS-06 | Phase 5: Static Visualization | Pending |
+| VIS-05 | Phase 5: Static Visualization | Complete |
+| VIS-06 | Phase 5: Static Visualization | Complete |
 | VIS-04 | Phase 6: Animated Visualization | Pending |
 | SUM-01 | Phase 7: Summary Dashboard | Pending |
 | SUM-02 | Phase 7: Summary Dashboard | Pending |
