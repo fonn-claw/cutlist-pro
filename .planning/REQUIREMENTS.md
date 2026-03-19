@@ -39,9 +39,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Visualization
 
-- [ ] **VIS-01**: SVG visualization shows each board with pieces laid out
-- [ ] **VIS-02**: Pieces are color-coded by type and labeled with name/dimensions
-- [ ] **VIS-03**: Waste areas shown in distinct pattern/color
+- [x] **VIS-01**: SVG visualization shows each board with pieces laid out
+- [x] **VIS-02**: Pieces are color-coded by type and labeled with name/dimensions
+- [x] **VIS-03**: Waste areas shown in distinct pattern/color
 - [ ] **VIS-04**: Animated optimization — pieces slide/fade into position when user clicks "Optimize"
 - [ ] **VIS-05**: User can hover over a piece to see its dimensions and label in a tooltip
 - [ ] **VIS-06**: User can zoom and pan on large layouts
@@ -125,9 +125,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPT-02 | Phase 4: Optimization Engine | Complete |
 | OPT-03 | Phase 4: Optimization Engine | Complete |
 | OPT-04 | Phase 4: Optimization Engine | Complete |
-| VIS-01 | Phase 5: Static Visualization | Pending |
-| VIS-02 | Phase 5: Static Visualization | Pending |
-| VIS-03 | Phase 5: Static Visualization | Pending |
+| VIS-01 | Phase 5: Static Visualization | Complete |
+| VIS-02 | Phase 5: Static Visualization | Complete |
+| VIS-03 | Phase 5: Static Visualization | Complete |
 | VIS-05 | Phase 5: Static Visualization | Pending |
 | VIS-06 | Phase 5: Static Visualization | Pending |
 | VIS-04 | Phase 6: Animated Visualization | Pending |
