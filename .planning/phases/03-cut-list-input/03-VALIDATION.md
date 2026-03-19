@@ -17,11 +17,11 @@ created: 2026-03-19
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Vitest (from Phase 1) |
-| **Config file** | vitest.config.ts (exists) |
+| **Framework** | Vitest 4.x (already installed) |
+| **Config file** | `vitest.config.ts` (exists from Phase 1) |
 | **Quick run command** | `npx vitest run --reporter=verbose` |
 | **Full suite command** | `npx vitest run` |
-| **Estimated runtime** | ~10 seconds |
+| **Estimated runtime** | ~5 seconds |
 
 ---
 
@@ -30,7 +30,7 @@ created: 2026-03-19
 - **After every task commit:** Run `npx vitest run --reporter=verbose`
 - **After every plan wave:** Run `npx vitest run`
 - **Before `/gsd:verify-work`:** Full suite must be green
-- **Max feedback latency:** 10 seconds
+- **Max feedback latency:** 5 seconds
 
 ---
 
@@ -38,15 +38,16 @@ created: 2026-03-19
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 03-01-01 | 01 | 1 | CUT-01..07 | unit | `npx vitest run src/lib/cut-operations.test.ts` | ❌ W0 | ⬜ pending |
-| 03-02-01 | 02 | 2 | CUT-01..07 | build+manual | `npx next build` | N/A | ⬜ pending |
+| 03-01-01 | 01 | 1 | CUT-04 | unit | `npx vitest run src/lib/piece-colors.test.ts` | No W0 | pending |
+| 03-01-02 | 01 | 1 | CUT-01,CUT-02,CUT-06,CUT-07 | unit | `npx vitest run src/lib/piece-operations.test.ts` | No W0 | pending |
+| 03-01-03 | 01 | 1 | CUT-05 | unit | `npx vitest run src/lib/paste-parser.test.ts` | No W0 | pending |
+| 03-02-01 | 02 | 2 | CUT-03,CUT-04 | manual | Visual: form, color picker | N/A | pending |
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `src/lib/cut-operations.test.ts` — Cut piece CRUD, color, bulk parse, duplicate tests
-- [ ] Dev dependencies already installed from Phase 1
+- [ ] Test files created as part of TDD tasks in Plan 01
 
 ---
 
@@ -54,18 +55,20 @@ created: 2026-03-19
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Color picker swatch display | CUT-04 | Visual rendering | Verify swatches visible on dark/light |
-| Bulk paste textarea | CUT-05 | Interactive behavior | Paste multi-line, verify pieces created |
-| Inline edit/delete | CUT-07 | Interactive behavior | Edit dims, delete entry |
+| Add piece with label/color | CUT-03, CUT-04 | Form interaction | Add piece, verify label shows, color swatch visible |
+| Bulk paste | CUT-05 | Textarea interaction | Paste multi-line data, verify pieces added |
+| Duplicate piece | CUT-06 | UI interaction | Click duplicate, verify copy appears |
+| Edit/remove piece | CUT-07 | UI interaction | Click edit, change fields; click delete |
 
 ---
 
 ## Validation Sign-Off
 
 - [ ] All tasks have automated verify or Wave 0 dependencies
-- [ ] Sampling continuity
+- [ ] Sampling continuity maintained
 - [ ] Wave 0 covers all MISSING references
-- [ ] Feedback latency < 10s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [ ] No watch-mode flags
+- [ ] Feedback latency < 5s
+- [ ] nyquist_compliant: true set in frontmatter
 
 **Approval:** pending
