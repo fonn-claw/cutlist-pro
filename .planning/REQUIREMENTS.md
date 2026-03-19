@@ -48,10 +48,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Summary
 
-- [ ] **SUM-01**: Dashboard shows total boards needed vs available
-- [ ] **SUM-02**: Dashboard shows total waste percentage
-- [ ] **SUM-03**: Dashboard shows per-board waste breakdown
-- [ ] **SUM-04**: User can enter optional price-per-board for cost estimate
+- [x] **SUM-01**: Dashboard shows total boards needed vs available
+- [x] **SUM-02**: Dashboard shows total waste percentage
+- [x] **SUM-03**: Dashboard shows per-board waste breakdown
+- [x] **SUM-04**: User can enter optional price-per-board for cost estimate
 
 ### Export
 
@@ -131,10 +131,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIS-05 | Phase 5: Static Visualization | Complete |
 | VIS-06 | Phase 5: Static Visualization | Complete |
 | VIS-04 | Phase 6: Animated Visualization | Complete |
-| SUM-01 | Phase 7: Summary Dashboard | Pending |
-| SUM-02 | Phase 7: Summary Dashboard | Pending |
-| SUM-03 | Phase 7: Summary Dashboard | Pending |
-| SUM-04 | Phase 7: Summary Dashboard | Pending |
+| SUM-01 | Phase 7: Summary Dashboard | Complete |
+| SUM-02 | Phase 7: Summary Dashboard | Complete |
+| SUM-03 | Phase 7: Summary Dashboard | Complete |
+| SUM-04 | Phase 7: Summary Dashboard | Complete |
 | EXP-01 | Phase 8: Export & Sharing | Pending |
 | EXP-02 | Phase 8: Export & Sharing | Pending |
 | EXP-03 | Phase 8: Export & Sharing | Pending |
