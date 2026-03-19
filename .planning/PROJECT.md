@@ -25,12 +25,12 @@ The animated cut layout visualization must clearly show optimized piece placemen
 - ✓ Waste areas shown in distinct pattern/color — Phase 5
 - ✓ Hover tooltips showing piece dimensions and label — Phase 5
 - ✓ Zoom and pan on large layouts — Phase 5
+- ✓ Animated optimization — pieces slide/fade into place — Phase 6
 - ✓ Dark theme by default with light theme toggle — Phase 1
 - ✓ Responsive design — must work on tablet — Phase 1
 
 ### Active
 
-- [ ] Animated optimization — pieces slide/fade into place
 - [ ] Summary dashboard: boards needed, waste %, cost estimate, per-board breakdown
 - [ ] Export as PNG
 - [ ] Print-friendly view
@@ -79,4 +79,4 @@ The animated cut layout visualization must clearly show optimized piece placemen
 | Stack inputs above viz on mobile | Natural reading flow on narrow screens | — Pending |
 
 ---
-*Last updated: 2026-03-19 after Phase 5*
+*Last updated: 2026-03-19 after Phase 6*
