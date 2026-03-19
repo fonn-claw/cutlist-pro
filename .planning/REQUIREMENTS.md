@@ -16,13 +16,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Cut List Input
 
-- [ ] **CUT-01**: User can add cut pieces with length and width dimensions
-- [ ] **CUT-02**: User can set quantity per cut piece
-- [ ] **CUT-03**: User can assign an optional label to each cut piece
-- [ ] **CUT-04**: User can assign colors per piece type (auto-assigned with manual override)
-- [ ] **CUT-05**: User can quick-add pieces by pasting a tab/comma-separated list
-- [ ] **CUT-06**: User can duplicate existing cut piece entries
-- [ ] **CUT-07**: User can remove or edit existing cut piece entries
+- [x] **CUT-01**: User can add cut pieces with length and width dimensions
+- [x] **CUT-02**: User can set quantity per cut piece
+- [x] **CUT-03**: User can assign an optional label to each cut piece
+- [x] **CUT-04**: User can assign colors per piece type (auto-assigned with manual override)
+- [x] **CUT-05**: User can quick-add pieces by pasting a tab/comma-separated list
+- [x] **CUT-06**: User can duplicate existing cut piece entries
+- [x] **CUT-07**: User can remove or edit existing cut piece entries
 
 ### Units
 
@@ -114,13 +114,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BOARD-02 | Phase 2: Board Input | Complete |
 | BOARD-03 | Phase 2: Board Input | Complete |
 | BOARD-04 | Phase 2: Board Input | Complete |
-| CUT-01 | Phase 3: Cut List Input | Pending |
-| CUT-02 | Phase 3: Cut List Input | Pending |
-| CUT-03 | Phase 3: Cut List Input | Pending |
-| CUT-04 | Phase 3: Cut List Input | Pending |
-| CUT-05 | Phase 3: Cut List Input | Pending |
-| CUT-06 | Phase 3: Cut List Input | Pending |
-| CUT-07 | Phase 3: Cut List Input | Pending |
+| CUT-01 | Phase 3: Cut List Input | Complete |
+| CUT-02 | Phase 3: Cut List Input | Complete |
+| CUT-03 | Phase 3: Cut List Input | Complete |
+| CUT-04 | Phase 3: Cut List Input | Complete |
+| CUT-05 | Phase 3: Cut List Input | Complete |
+| CUT-06 | Phase 3: Cut List Input | Complete |
+| CUT-07 | Phase 3: Cut List Input | Complete |
 | OPT-01 | Phase 4: Optimization Engine | Pending |
 | OPT-02 | Phase 4: Optimization Engine | Pending |
 | OPT-03 | Phase 4: Optimization Engine | Pending |
