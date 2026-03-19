@@ -15,6 +15,7 @@ import { CutPieceForm } from '@/components/cuts/CutPieceForm';
 import { CutPieceList } from '@/components/cuts/CutPieceList';
 import { BulkAddForm } from '@/components/cuts/BulkAddForm';
 import { KerfInput } from '@/components/settings/KerfInput';
+import { CuttingDiagramList } from '@/components/visualization/CuttingDiagramList';
 
 export default function Home() {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -172,6 +173,7 @@ export default function Home() {
                   Warning: {optimizationResult.unplacedPieces.length} piece(s) could not be placed. Check that your boards are large enough.
                 </div>
               )}
+              <CuttingDiagramList result={optimizationResult} />
             </div>
           )}
         </MainArea>
