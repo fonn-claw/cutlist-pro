@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Board Input
 
-- [ ] **BOARD-01**: User can add stock boards with length and width dimensions
-- [ ] **BOARD-02**: User can set quantity per stock board
-- [ ] **BOARD-03**: User can select from common board presets (4×8 plywood, 1×6 board, etc.)
-- [ ] **BOARD-04**: User can remove or edit existing board entries
+- [x] **BOARD-01**: User can add stock boards with length and width dimensions
+- [x] **BOARD-02**: User can set quantity per stock board
+- [x] **BOARD-03**: User can select from common board presets (4×8 plywood, 1×6 board, etc.)
+- [x] **BOARD-04**: User can remove or edit existing board entries
 
 ### Cut List Input
 
@@ -110,10 +110,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UNIT-01 | Phase 1: Foundation & Design System | Complete |
 | UNIT-02 | Phase 1: Foundation & Design System | Complete |
 | UNIT-03 | Phase 1: Foundation & Design System | Complete |
-| BOARD-01 | Phase 2: Board Input | Pending |
-| BOARD-02 | Phase 2: Board Input | Pending |
-| BOARD-03 | Phase 2: Board Input | Pending |
-| BOARD-04 | Phase 2: Board Input | Pending |
+| BOARD-01 | Phase 2: Board Input | Complete |
+| BOARD-02 | Phase 2: Board Input | Complete |
+| BOARD-03 | Phase 2: Board Input | Complete |
+| BOARD-04 | Phase 2: Board Input | Complete |
 | CUT-01 | Phase 3: Cut List Input | Pending |
 | CUT-02 | Phase 3: Cut List Input | Pending |
 | CUT-03 | Phase 3: Cut List Input | Pending |
