@@ -6,42 +6,48 @@
 <domain>
 ## Phase Boundary
 
-This phase delivers the Cut List Input UI: a form in the sidebar where users can add, edit, remove, duplicate, and bulk-add cut pieces with dimensions, labels, colors, and quantities. No optimization or visualization — just cut piece management.
+This phase delivers the cut piece CRUD interface in the sidebar — users can add pieces with dimensions, quantity, label, color, and grain direction. Includes bulk-add via paste and duplicate functionality. No optimization, no visualization — just cut piece management.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Cut Piece Form Layout
-- Form in sidebar below board section — same inline pattern as board input
-- Cut piece entries as card list with inline edit — consistent with board entries
-- Color auto-assigned from a palette on creation, with manual override via color picker
-- Duplicate button on each entry — creates a copy with new ID
-- Delete via icon button with no confirmation — consistent with boards
-
-### Quick-Add (Bulk Entry)
-- Paste tab/comma-separated list into a textarea — parsed on submit
-- Format: "length, width, quantity, label" per line (quantity and label optional)
-- Parsed values create individual CutPiece entries with auto-assigned colors
-- Show a toggle/button to switch between single-add form and bulk-add textarea
+### Form Layout & Interaction
+- Cut piece form below the board section in sidebar — length, width, quantity, label fields with "Add" button
+- Piece entries display as compact colored cards — show dimensions, label, quantity, color swatch, and action buttons
+- Edit mode: clicking a piece entry makes it inline-editable (same pattern as BoardEntry) — no modals
+- Delete: icon button on each entry, no confirmation
+- Duplicate: icon button that creates a copy with same dimensions/label/color but new ID
 
 ### Color System
-- 10-color palette with distinct, visible colors on both dark and light themes
-- Colors auto-assigned in order (cycling through palette)
-- Manual override via a simple color picker (click swatch to open palette)
-- Color stored as hex string in CutPiece.color field (already in types.ts)
+- Auto-assign colors from a predefined palette when pieces are added — cycle through 10-12 distinct colors
+- Color swatch displayed on each piece card — small circle or square indicator
+- Manual override: clicking the color swatch shows a small color picker (simple palette of 12 colors, not a full color picker)
+- Colors are stored as hex strings in the CutPiece.color field
+
+### Bulk Add (Quick-Add)
+- Paste button or textarea that accepts tab/comma-separated data
+- Format: "label, length, width, quantity" per line — flexible parsing (tab or comma)
+- Parsed pieces get auto-assigned colors and added to the list
+- Show count of added pieces after paste
+
+### Grain Direction
+- Checkbox or toggle on each piece entry — "Has grain (no rotation)"
+- Default: unchecked (pieces can rotate freely)
+- Visual indicator on piece card when grain is set
 
 ### State Management
-- React useState at page level — same pattern as boards (lifted state)
-- Cut piece operations as pure functions in lib/cut-operations.ts
-- CutPiece type already defined in types.ts with id, dimensions, quantity, label, color, grainDirection
+- Cut piece list stored in useState at page level — matches board state pattern
+- Each piece gets unique ID via crypto.randomUUID()
+- Dimensions entered in display units, stored as mm internally
+- Default quantity is 1, default label is empty string
 
 ### Claude's Discretion
-- Exact color palette hex values
-- Quick-add textarea placeholder text
-- Form field ordering and spacing
-- Color picker UI details (inline swatches vs dropdown)
+- Specific color palette choices (aim for distinguishable, muted workshop tones)
+- Exact styling of color picker popup
+- Paste textarea sizing and positioning
+- Animation on add/remove/duplicate
 
 </decisions>
 
@@ -49,35 +55,33 @@ This phase delivers the Cut List Input UI: a form in the sidebar where users can
 ## Existing Code Insights
 
 ### Reusable Assets
-- `src/lib/types.ts` — CutPiece interface already defined
-- `src/lib/board-operations.ts` — Pattern for CRUD pure functions (addBoard, updateBoard, removeBoard)
-- `src/components/boards/BoardForm.tsx` — Pattern for input form component
-- `src/components/boards/BoardEntry.tsx` — Pattern for inline edit card
-- `src/components/boards/BoardList.tsx` — Pattern for list with empty state
-- `src/contexts/UnitContext.tsx` — useUnits hook for display formatting
-- `src/lib/units.ts` — Conversion and formatting utilities
+- `CutPiece` type from `src/lib/types.ts` — already has id, dimensions, quantity, label, color, grainDirection
+- `toInternal()` / `toDisplay()` / `formatDimension()` from `src/lib/units.ts`
+- `useUnits()` from `src/contexts/UnitContext.tsx`
+- Board component pattern: BoardForm, BoardEntry, BoardList, BoardPresets — follow same structure
+- `addBoard` / `updateBoard` / `removeBoard` pattern from `src/lib/board-operations.ts`
 
 ### Established Patterns
-- Pure functions in lib/ with TDD tests
-- UI components in components/{feature}/ directory
-- State lifted to page.tsx with handlers passed as props
+- TDD for pure logic (presets, operations) then UI components
+- Client components with 'use client' directive
+- Inline edit pattern from BoardEntry
+- Page-level state lifting
 - Semantic color tokens: bg-surface, text-text-primary, border-border, text-accent
-- Client components with "use client" directive
 
 ### Integration Points
 - Cut piece input lives in Sidebar below board section
-- State managed at page.tsx level alongside board state
-- Cut piece data feeds Phase 4 (Optimization Engine)
-- grainDirection flag will be used by optimization (Phase 4) to prevent rotation
+- Cut piece state accessible from page level for Phase 4 optimization
+- Colors will be used in Phase 5 visualization for piece identification
 
 </code_context>
 
 <specifics>
 ## Specific Ideas
 
-- Follow the exact same patterns established in Phase 2 for consistency
-- Quick-add parsing should be forgiving (handle extra whitespace, missing optional fields)
-- Color palette should work well against both dark and light backgrounds
+- Follow the exact same component structure as boards: PieceForm, PieceEntry, PieceList
+- Piece operations: addPiece, updatePiece, removePiece, duplicatePiece — same pure function pattern
+- Color palette should be visually distinct colors that work on both dark and light themes
+- Bulk paste should be forgiving — handle extra whitespace, missing fields, etc.
 
 </specifics>
 
