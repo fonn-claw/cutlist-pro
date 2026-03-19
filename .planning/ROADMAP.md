@@ -51,8 +51,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Board presets data and CRUD operations with TDD tests
-- [ ] 02-02-PLAN.md — Board UI components (form, list, presets dropdown) and page wiring
+- [ ] 02-01-PLAN.md — Board presets data and CRUD pure functions with TDD tests
+- [ ] 02-02-PLAN.md — Board UI components (form, list, presets dropdown) and page state wiring
 
 ### Phase 3: Cut List Input
 **Goal**: Users can define all the pieces they need to cut, with labels, colors, and bulk entry
