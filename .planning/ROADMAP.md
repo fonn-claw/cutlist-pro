@@ -152,7 +152,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Design System | 0/2 | Planning complete | - |
-| 2. Board Input | 0/2 | Planning complete | - |
+| 2. Board Input | 1/2 | In Progress|  |
 | 3. Cut List Input | 0/0 | Not started | - |
 | 4. Optimization Engine | 0/0 | Not started | - |
 | 5. Static Visualization | 0/0 | Not started | - |
