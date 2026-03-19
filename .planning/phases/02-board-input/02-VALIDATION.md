@@ -17,11 +17,11 @@ created: 2026-03-19
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Vitest (from Phase 1) + @testing-library/react |
-| **Config file** | vitest.config.ts (exists from Phase 1) |
+| **Framework** | Vitest 4.x (already installed) |
+| **Config file** | `vitest.config.ts` (exists from Phase 1) |
 | **Quick run command** | `npx vitest run --reporter=verbose` |
 | **Full suite command** | `npx vitest run` |
-| **Estimated runtime** | ~8 seconds |
+| **Estimated runtime** | ~5 seconds |
 
 ---
 
@@ -30,7 +30,7 @@ created: 2026-03-19
 - **After every task commit:** Run `npx vitest run --reporter=verbose`
 - **After every plan wave:** Run `npx vitest run`
 - **Before `/gsd:verify-work`:** Full suite must be green
-- **Max feedback latency:** 10 seconds
+- **Max feedback latency:** 5 seconds
 
 ---
 
@@ -38,20 +38,14 @@ created: 2026-03-19
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | BOARD-01, BOARD-02 | unit | `npx vitest run src/__tests__/board-context.test.tsx` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 1 | BOARD-03 | unit | `npx vitest run src/__tests__/presets.test.ts` | ❌ W0 | ⬜ pending |
-| 02-01-03 | 01 | 1 | BOARD-04 | unit | `npx vitest run src/__tests__/board-context.test.tsx` | ❌ W0 | ⬜ pending |
-| 02-01-04 | 01 | 1 | BOARD-01..04 | manual | Visual inspection of form | N/A | ⬜ pending |
-
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+| 02-01-01 | 01 | 1 | BOARD-03 | unit | `npx vitest run src/lib/board-presets.test.ts` | No W0 | pending |
+| 02-01-02 | 01 | 1 | BOARD-01, BOARD-02, BOARD-04 | manual | Visual: CRUD operations | N/A | pending |
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `src/__tests__/board-context.test.tsx` — Board CRUD operations tests (BOARD-01, BOARD-02, BOARD-04)
-- [ ] `src/__tests__/presets.test.ts` — Board presets data tests (BOARD-03)
-- [ ] Dev dependencies already installed from Phase 1
+- [ ] `src/lib/board-presets.test.ts` — Preset data validation tests
 
 ---
 
@@ -59,19 +53,20 @@ created: 2026-03-19
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Board form renders in sidebar | BOARD-01 | Visual layout check | Open app, verify form appears in sidebar |
-| Preset dropdown populates | BOARD-03 | Visual/interactive | Click preset dropdown, verify options appear |
-| Edit/remove board entries | BOARD-04 | Interactive behavior | Add board, edit dims, delete entry |
+| Add board with dimensions | BOARD-01 | Form interaction | Enter 48x96, click Add, verify board appears |
+| Set quantity | BOARD-02 | Form interaction | Add board, set qty to 3, verify display |
+| Preset auto-fill | BOARD-03 | Dropdown + form | Select 4x8 Plywood, verify dimensions fill |
+| Edit/remove board | BOARD-04 | UI interaction | Click edit, change dims; click delete, verify |
 
 ---
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
+- [ ] All tasks have automated verify or Wave 0 dependencies
+- [ ] Sampling continuity maintained
 - [ ] Wave 0 covers all MISSING references
 - [ ] No watch-mode flags
-- [ ] Feedback latency < 10s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [ ] Feedback latency < 5s
+- [ ] nyquist_compliant: true set in frontmatter
 
 **Approval:** pending
