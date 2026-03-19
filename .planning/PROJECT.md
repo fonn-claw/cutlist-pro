@@ -31,10 +31,14 @@ The animated cut layout visualization must clearly show optimized piece placemen
 
 ### Active
 
-- [ ] Summary dashboard: boards needed, waste %, cost estimate, per-board breakdown
-- [ ] Export as PNG
-- [ ] Print-friendly view
-- [ ] Share via URL (encode state in URL)
+All v1 requirements complete.
+
+### Recently Completed
+
+- ✓ Summary dashboard: boards needed, waste %, cost estimate, per-board breakdown — Phase 7
+- ✓ Export as PNG — Phase 8
+- ✓ Print-friendly view — Phase 8
+- ✓ Share via URL (encode state in URL) — Phase 8
 
 ### Out of Scope
 
@@ -79,4 +83,4 @@ The animated cut layout visualization must clearly show optimized piece placemen
 | Stack inputs above viz on mobile | Natural reading flow on narrow screens | — Pending |
 
 ---
-*Last updated: 2026-03-19 after Phase 6*
+*Last updated: 2026-03-19 after Phase 8 — v1 complete*

@@ -55,9 +55,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Export
 
-- [ ] **EXP-01**: User can download cut layout as PNG image
-- [ ] **EXP-02**: User can view and use a print-friendly layout
-- [ ] **EXP-03**: User can share project via URL (full state encoded in URL)
+- [x] **EXP-01**: User can download cut layout as PNG image
+- [x] **EXP-02**: User can view and use a print-friendly layout
+- [x] **EXP-03**: User can share project via URL (full state encoded in URL)
 
 ### Design
 
@@ -135,9 +135,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SUM-02 | Phase 7: Summary Dashboard | Complete |
 | SUM-03 | Phase 7: Summary Dashboard | Complete |
 | SUM-04 | Phase 7: Summary Dashboard | Complete |
-| EXP-01 | Phase 8: Export & Sharing | Pending |
-| EXP-02 | Phase 8: Export & Sharing | Pending |
-| EXP-03 | Phase 8: Export & Sharing | Pending |
+| EXP-01 | Phase 8: Export & Sharing | Complete |
+| EXP-02 | Phase 8: Export & Sharing | Complete |
+| EXP-03 | Phase 8: Export & Sharing | Complete |
 
 **Coverage:**
 - v1 requirements: 36 total

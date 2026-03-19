@@ -38,16 +38,16 @@ created: 2026-03-19
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 03-01-01 | 01 | 1 | CUT-04 | unit | `npx vitest run src/lib/piece-colors.test.ts` | No W0 | pending |
-| 03-01-02 | 01 | 1 | CUT-01,CUT-02,CUT-06,CUT-07 | unit | `npx vitest run src/lib/piece-operations.test.ts` | No W0 | pending |
-| 03-01-03 | 01 | 1 | CUT-05 | unit | `npx vitest run src/lib/paste-parser.test.ts` | No W0 | pending |
-| 03-02-01 | 02 | 2 | CUT-03,CUT-04 | manual | Visual: form, color picker | N/A | pending |
+| 03-01-01 | 01 | 1 | CUT-01 to CUT-07 | unit | `npx vitest run src/lib/cut-operations.test.ts` | No W0 | pending |
+| 03-02-01 | 02 | 2 | CUT-01 to CUT-07 | build | `npx tsc --noEmit` | N/A | pending |
+| 03-02-02 | 02 | 2 | CUT-01 to CUT-07 | build+test | `npx tsc --noEmit && npx vitest run` | N/A | pending |
+| 03-02-03 | 02 | 2 | CUT-01 to CUT-07 | manual | Visual verification | N/A | pending |
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] Test files created as part of TDD tasks in Plan 01
+- [ ] `src/lib/cut-operations.test.ts` — Created as part of TDD in Plan 01 Task 1
 
 ---
 
@@ -55,10 +55,10 @@ created: 2026-03-19
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Add piece with label/color | CUT-03, CUT-04 | Form interaction | Add piece, verify label shows, color swatch visible |
-| Bulk paste | CUT-05 | Textarea interaction | Paste multi-line data, verify pieces added |
-| Duplicate piece | CUT-06 | UI interaction | Click duplicate, verify copy appears |
-| Edit/remove piece | CUT-07 | UI interaction | Click edit, change fields; click delete |
+| Add piece with label/color | CUT-03, CUT-04 | Form interaction | Add piece, verify label and color swatch |
+| Bulk paste | CUT-05 | Textarea interaction | Paste data, verify pieces added with count |
+| Duplicate piece | CUT-06 | UI interaction | Click duplicate, verify copy |
+| Edit/remove piece | CUT-07 | UI interaction | Edit and delete |
 
 ---
 
