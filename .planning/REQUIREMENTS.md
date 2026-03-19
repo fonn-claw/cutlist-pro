@@ -61,11 +61,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Design
 
-- [ ] **DES-01**: App uses dark theme by default
-- [ ] **DES-02**: User can toggle between dark and light themes
-- [ ] **DES-03**: Layout uses sidebar for inputs, main area for visualization
-- [ ] **DES-04**: On mobile/tablet, inputs stack above visualization
-- [ ] **DES-05**: App is responsive and usable on tablet (768px+)
+- [x] **DES-01**: App uses dark theme by default
+- [x] **DES-02**: User can toggle between dark and light themes
+- [x] **DES-03**: Layout uses sidebar for inputs, main area for visualization
+- [x] **DES-04**: On mobile/tablet, inputs stack above visualization
+- [x] **DES-05**: App is responsive and usable on tablet (768px+)
 
 ## v2 Requirements
 
@@ -102,11 +102,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DES-01 | Phase 1: Foundation & Design System | Pending |
-| DES-02 | Phase 1: Foundation & Design System | Pending |
-| DES-03 | Phase 1: Foundation & Design System | Pending |
-| DES-04 | Phase 1: Foundation & Design System | Pending |
-| DES-05 | Phase 1: Foundation & Design System | Pending |
+| DES-01 | Phase 1: Foundation & Design System | Complete |
+| DES-02 | Phase 1: Foundation & Design System | Complete |
+| DES-03 | Phase 1: Foundation & Design System | Complete |
+| DES-04 | Phase 1: Foundation & Design System | Complete |
+| DES-05 | Phase 1: Foundation & Design System | Complete |
 | UNIT-01 | Phase 1: Foundation & Design System | Complete |
 | UNIT-02 | Phase 1: Foundation & Design System | Complete |
 | UNIT-03 | Phase 1: Foundation & Design System | Complete |
