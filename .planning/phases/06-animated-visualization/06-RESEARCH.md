@@ -1,16 +1,18 @@
 # Phase 6: Animated Visualization - Research
 
 **Researched:** 2026-03-19
-**Domain:** SVG animation in React (CSS transitions + requestAnimationFrame)
+**Domain:** SVG animation in React (CSS transitions, staggered sequencing, 60fps performance)
 **Confidence:** HIGH
 
 ## Summary
 
-This phase adds entrance animations to the existing SVG cutting diagram pieces. The current codebase renders `PieceRect` components as `<rect>` elements inside SVG, positioned with `x`, `y`, `width`, `height` attributes. The animation needs to make these pieces slide in from board edges and fade in, staggered board-by-board and sorted by piece area descending.
+Animating SVG `<rect>` elements sliding into position is best achieved with **CSS transitions on transform and opacity** applied to SVG `<g>` wrapper elements. Modern browsers (Chrome 89+, Firefox, Safari) GPU-accelerate CSS transform/opacity on SVG elements, meaning these animations run on the compositor thread at 60fps without triggering layout recalculation or repainting. No animation library is needed.
 
-The recommended approach is a **custom `useAnimation` hook using `requestAnimationFrame`** that drives SVG attribute interpolation. CSS transitions cannot animate SVG attributes (`x`, `y`) reliably across browsers -- they work on CSS properties but SVG geometry attributes need either SMIL, CSS `transform`, or JS-driven animation. Since pieces need coordinated stagger timing across boards and a skip-to-end mechanism, a JS-driven approach with `requestAnimationFrame` provides the most control with zero dependencies.
+The architecture uses React state to control animation phases: a `useAnimationSequence` hook tracks which pieces are "active" (visible at final position) vs "pending" (invisible/offset). Stagger timing is handled by `setTimeout` chains in a `useEffect`, incrementally revealing pieces. Each `PieceRect` receives an `animated` boolean -- when false, it renders at an offset position with opacity 0; when true, CSS transitions smoothly move it to final position with opacity 1. The CSS transition handles the interpolation; React only toggles state.
 
-**Primary recommendation:** Build a `useAnimationSequence` hook that accepts placed pieces grouped by board, computes start positions (off nearest board edge), and drives interpolation via `requestAnimationFrame`. No external animation libraries needed -- the animation logic is ~100 lines of pure JS.
+This approach is superior to requestAnimationFrame because: (1) CSS transitions run on the GPU compositor thread, not the main thread, so they maintain 60fps even during React reconciliation; (2) no per-frame setState calls that cause re-renders; (3) easing is handled by the browser's native cubic-bezier implementation; (4) dramatically less code (~50 lines vs ~150 for rAF approach).
+
+**Primary recommendation:** Use CSS `transition` on SVG `<g>` elements with `transform: translate()` and `opacity` for piece entrance. Orchestrate stagger timing with a custom `useAnimationSequence` hook using `setTimeout`. Zero dependencies added.
 
 <user_constraints>
 ## User Constraints (from CONTEXT.md)
@@ -39,7 +41,7 @@ The recommended approach is a **custom `useAnimation` hook using `requestAnimati
 - Whether board headers animate or appear instantly
 
 ### Deferred Ideas (OUT OF SCOPE)
-None
+None -- discussion stayed within phase scope
 </user_constraints>
 
 <phase_requirements>
@@ -47,7 +49,7 @@ None
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| VIS-04 | Animated optimization -- pieces slide/fade into position when user clicks "Optimize" | Animation hook drives SVG attribute interpolation via rAF; PieceRect gets animated props; BoardDiagram orchestrates stagger; CuttingDiagramList coordinates board-by-board sequencing; click-to-skip via animation state |
+| VIS-04 | Animated optimization -- pieces slide/fade into position when user clicks Optimize | CSS transition on SVG g elements with transform+opacity, useAnimationSequence hook for stagger orchestration, skip-to-end on click |
 </phase_requirements>
 
 ## Standard Stack
@@ -55,23 +57,28 @@ None
 ### Core
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| React (existing) | 19.2.4 | Component rendering | Already in project |
-| requestAnimationFrame (browser API) | N/A | Frame-by-frame animation driver | Zero dependencies, full control over timing, easy cancel via cancelAnimationFrame |
+| React | 19.2.4 | State management for animation phases | Already in project |
+| CSS Transitions | N/A (browser) | GPU-accelerated transform+opacity interpolation | Zero-dependency, compositor-thread animation |
 
 ### Supporting
-No additional libraries needed. The animation is straightforward interpolation of 2-3 SVG attributes per piece.
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| (none) | - | - | No additional dependencies needed |
 
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| requestAnimationFrame | Framer Motion | Massive bundle (~30KB), overkill for SVG attribute interpolation on <20 elements |
-| requestAnimationFrame | CSS transitions on transform | SVG `x`/`y` are presentation attributes not CSS properties; would need to switch to `transform: translate()` which changes the rendering model |
-| requestAnimationFrame | SMIL `<animate>` | Deprecated direction from Chrome team, poor React integration, hard to coordinate stagger timing |
-| requestAnimationFrame | Web Animations API | Good option but less control over stagger sequencing; would work but rAF is simpler for this use case |
+| CSS transitions | Framer Motion | Adds ~30KB, provides spring physics and layout animations -- overkill for simple slide+fade |
+| CSS transitions | react-spring | Adds ~20KB, JS-driven interpolation -- unnecessary when CSS handles it natively |
+| CSS transitions | requestAnimationFrame | More control but more code, runs on main thread, harder to get easing right, requires per-frame state management |
+| CSS transitions | SMIL `<animate>` | Deprecated direction from Chrome (then un-deprecated), poor React integration, no stagger control |
+| CSS transitions | CSS @keyframes | Would work but transitions are simpler for A-to-B state changes; keyframes better for looping |
+
+**Why CSS transitions over requestAnimationFrame:** The previous research draft recommended rAF. After deeper investigation, CSS transitions are strictly better for this use case because: (1) GPU-accelerated on SVG elements in Chrome 89+/Firefox/Safari -- animations run on the compositor thread at 60fps even when main thread is busy; (2) React only needs to toggle boolean states, not update positions 60x/sec; (3) browser-native ease-out easing without hand-rolling cubic bezier math; (4) automatic animation interruption when state changes mid-transition.
 
 **Installation:**
 ```bash
-# No new dependencies required
+# No installation needed -- zero new dependencies
 ```
 
 ## Architecture Patterns
@@ -80,272 +87,373 @@ No additional libraries needed. The animation is straightforward interpolation o
 ```
 src/
 ├── hooks/
-│   └── useAnimationSequence.ts    # Animation orchestration hook
+│   └── useAnimationSequence.ts    # Orchestrates stagger timing
 ├── lib/
-│   └── animation-utils.ts         # Pure functions: easing, start positions, timing
+│   └── animation-utils.ts         # Pure functions: compute slide origin, sort pieces, calculate delays
 ├── components/visualization/
-│   ├── PieceRect.tsx              # Modified: accept animated x/y/opacity props
-│   ├── WasteRect.tsx              # Modified: accept animated opacity prop
-│   ├── BoardDiagram.tsx           # Modified: use animation hook, pass animated props
-│   └── CuttingDiagramList.tsx     # Modified: coordinate board-by-board sequencing
+│   ├── PieceRect.tsx              # Enhanced with animation props (existing)
+│   ├── BoardDiagram.tsx           # Enhanced with animation orchestration (existing)
+│   ├── CuttingDiagramList.tsx     # Enhanced with board-by-board sequencing (existing)
+│   └── WasteRect.tsx              # Enhanced with fade-in after pieces complete (existing)
 ```
 
-### Pattern 1: Animation State Machine
-**What:** The animation has three states: `idle` (no animation), `playing` (interpolating), `complete` (final positions shown). The hook manages transitions between these states.
-**When to use:** When the `optimizationResult` prop changes from null to a value (or from one value to another).
-
+### Pattern 1: CSS Transition on SVG `<g>` Elements
+**What:** Wrap each piece's SVG content in a `<g>` with CSS transition on transform and opacity. Toggle between offset/hidden and final/visible states via React props.
+**When to use:** Always -- this is the core animation mechanism.
+**Example:**
 ```typescript
-type AnimationState = 'idle' | 'playing' | 'complete';
+// PieceRect.tsx -- enhanced with animation state
+interface PieceRectProps {
+  piece: PlacedPiece;
+  units: UnitSystem;
+  animated: boolean;       // false = at offset, true = at final position
+  slideFrom: { dx: number; dy: number }; // offset from final position
+  onMouseEnter?: (e: React.MouseEvent, piece: PlacedPiece) => void;
+  onMouseMove?: (e: React.MouseEvent) => void;
+  onMouseLeave?: () => void;
+}
 
-interface AnimatedPiece {
-  // Final position (from PlacedPiece)
-  finalX: number;
-  finalY: number;
-  // Start position (computed: off nearest board edge)
-  startX: number;
-  startY: number;
-  // Current interpolated values
-  currentX: number;
-  currentY: number;
-  currentOpacity: number;
-  // Timing
-  delay: number;     // ms before this piece starts
-  duration: number;   // ms for this piece's animation
+export function PieceRect({ piece, units, animated, slideFrom, ...handlers }: PieceRectProps) {
+  const translateX = animated ? 0 : slideFrom.dx;
+  const translateY = animated ? 0 : slideFrom.dy;
+  const opacity = animated ? 1 : 0;
+
+  return (
+    <g
+      style={{
+        transform: `translate(${translateX}px, ${translateY}px)`,
+        opacity,
+        transition: 'transform 400ms ease-out, opacity 300ms ease-out',
+        willChange: animated ? 'auto' : 'transform, opacity',
+      }}
+    >
+      <rect
+        x={piece.x}
+        y={piece.y}
+        width={piece.width}
+        height={piece.height}
+        fill={piece.color}
+        fillOpacity={0.7}
+        stroke={piece.color}
+        strokeWidth={1}
+        cursor="pointer"
+        onMouseEnter={(e) => handlers.onMouseEnter?.(e, piece)}
+        onMouseMove={handlers.onMouseMove}
+        onMouseLeave={handlers.onMouseLeave}
+      />
+      {/* labels... */}
+    </g>
+  );
 }
 ```
 
-### Pattern 2: Nearest-Edge Start Position Calculation
-**What:** Each piece starts off-screen from the nearest board edge and slides to its final position.
-**When to use:** Computing the `startX`/`startY` for each piece.
-
+### Pattern 2: Stagger Orchestration Hook
+**What:** A custom hook that manages which pieces are "active" over time, using setTimeout chains.
+**When to use:** In BoardDiagram to control per-piece reveal timing.
+**Example:**
 ```typescript
-function computeStartPosition(
+// useAnimationSequence.ts
+interface AnimationConfig {
+  totalItems: number;
+  staggerDelay: number;    // ms between each piece (50-100ms)
+  onComplete?: () => void; // callback when all items revealed
+}
+
+function useAnimationSequence({ totalItems, staggerDelay, onComplete }: AnimationConfig) {
+  const [activeCount, setActiveCount] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const timersRef = useRef<number[]>([]);
+
+  const start = useCallback(() => {
+    // Clear any existing timers
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setActiveCount(0);
+    setIsAnimating(true);
+
+    for (let i = 0; i < totalItems; i++) {
+      const timer = window.setTimeout(() => {
+        setActiveCount(i + 1);
+        if (i === totalItems - 1) {
+          setIsAnimating(false);
+          onComplete?.();
+        }
+      }, i * staggerDelay);
+      timersRef.current.push(timer);
+    }
+  }, [totalItems, staggerDelay, onComplete]);
+
+  const skipToEnd = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setActiveCount(totalItems);
+    setIsAnimating(false);
+  }, [totalItems]);
+
+  const reset = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setActiveCount(0);
+    setIsAnimating(false);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => timersRef.current.forEach(clearTimeout);
+  }, []);
+
+  return { activeCount, isAnimating, start, skipToEnd, reset };
+}
+```
+
+### Pattern 3: Compute Slide Direction from Nearest Edge
+**What:** Pure function that determines which board edge a piece is closest to, returning an offset vector.
+**When to use:** To calculate the `slideFrom` prop for each PieceRect.
+**Example:**
+```typescript
+// animation-utils.ts
+interface SlideOffset {
+  dx: number;  // horizontal offset in SVG units
+  dy: number;  // vertical offset in SVG units
+}
+
+function computeSlideOrigin(
   piece: PlacedPiece,
   boardWidth: number,
-  boardHeight: number
-): { startX: number; startY: number } {
+  boardHeight: number,
+  slideDistance: number = 80  // how far off-board pieces start (in SVG user units)
+): SlideOffset {
   const centerX = piece.x + piece.width / 2;
   const centerY = piece.y + piece.height / 2;
 
-  // Distances to each edge
-  const distLeft = centerX;
-  const distRight = boardWidth - centerX;
-  const distTop = centerY;
-  const distBottom = boardHeight - centerY;
+  const distToLeft = centerX;
+  const distToRight = boardWidth - centerX;
+  const distToTop = centerY;
+  const distToBottom = boardHeight - centerY;
 
-  const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+  const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
 
-  if (minDist === distLeft) return { startX: -piece.width, startY: piece.y };
-  if (minDist === distRight) return { startX: boardWidth, startY: piece.y };
-  if (minDist === distTop) return { startX: piece.x, startY: -piece.height };
-  return { startX: piece.x, startY: boardHeight };
+  if (minDist === distToLeft) return { dx: -slideDistance, dy: 0 };
+  if (minDist === distToRight) return { dx: slideDistance, dy: 0 };
+  if (minDist === distToTop) return { dx: 0, dy: -slideDistance };
+  return { dx: 0, dy: slideDistance };
+}
+
+// Sort pieces by area descending for dramatic stagger effect
+function sortPiecesForAnimation(pieces: PlacedPiece[]): PlacedPiece[] {
+  return [...pieces].sort((a, b) => (b.width * b.height) - (a.width * a.height));
 }
 ```
 
-### Pattern 3: Ease-Out Easing Function
-**What:** Standard ease-out curve for natural deceleration.
-
+### Pattern 4: Board-by-Board Sequencing
+**What:** CuttingDiagramList orchestrates animation across boards -- each board starts after the previous completes.
+**When to use:** Always -- user decision mandates board-by-board sequencing.
+**Example:**
 ```typescript
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
-}
+// In CuttingDiagramList: track which board index is currently animating
+const [activeBoardIndex, setActiveBoardIndex] = useState(-1);
+
+// When optimization result changes, start animation from board 0
+useEffect(() => {
+  setActiveBoardIndex(0);
+}, [result]);
+
+// Each BoardDiagram calls onAnimationComplete when its pieces finish
+// Then CuttingDiagramList advances to next board after 200ms pause
+const handleBoardComplete = useCallback((boardIndex: number) => {
+  setTimeout(() => {
+    setActiveBoardIndex(boardIndex + 1);
+  }, 200); // inter-board pause
+}, []);
 ```
 
-### Pattern 4: Stagger Timing Calculation
-**What:** Pieces within a board are sorted by area (descending) and staggered with 50-100ms delays. Boards are sequenced with a ~200ms gap.
-
+### Pattern 5: Skip-to-End with Instant Transition Override
+**What:** When user clicks to skip, temporarily disable CSS transitions so pieces jump to final state instantly.
+**When to use:** On click during animation.
+**Example:**
 ```typescript
-function computeDelays(
-  boards: BoardLayout[],
-  pieceDuration: number,    // ~300ms per piece
-  pieceStagger: number,     // ~80ms between pieces
-  boardPause: number        // ~200ms between boards
-): Map<string, number> {
-  const delays = new Map<string, number>();
-  let currentTime = 0;
+// Track whether transitions should be disabled
+const [skipMode, setSkipMode] = useState(false);
 
-  for (const board of boards) {
-    const sorted = [...board.pieces].sort(
-      (a, b) => (b.width * b.height) - (a.width * a.height)
-    );
-    for (let i = 0; i < sorted.length; i++) {
-      const key = `${sorted[i].pieceId}-${sorted[i].instanceIndex}`;
-      delays.set(key, currentTime + i * pieceStagger);
-    }
-    // Next board starts after last piece finishes
-    currentTime += (sorted.length - 1) * pieceStagger + pieceDuration + boardPause;
-  }
+const handleSkip = () => {
+  setSkipMode(true);    // disables CSS transitions
+  skipToEnd();          // sets all pieces to animated=true
+  // Re-enable transitions after paint
+  requestAnimationFrame(() => setSkipMode(false));
+};
 
-  return delays;
-}
-```
-
-### Pattern 5: SVG Transform-Based Animation (Preferred over x/y mutation)
-**What:** Instead of animating `x` and `y` attributes directly, use SVG `transform` attribute on the `<g>` wrapper to translate from start to final position. This keeps the final `x`/`y` attributes untouched and only modifies the transform offset.
-**Why:** Cleaner separation -- the `PieceRect` keeps its existing `x`/`y` rendering. The animation layer adds a `transform` offset that starts at `(startX - finalX, startY - finalY)` and animates to `(0, 0)`.
-
-```typescript
-// In PieceRect, wrap existing content in a <g> with transform
-<g
-  transform={`translate(${offsetX}, ${offsetY})`}
-  opacity={opacity}
->
-  {/* existing rect + text elements unchanged */}
-</g>
+// In PieceRect: conditionally apply transition
+style={{
+  transition: skipMode ? 'none' : 'transform 400ms ease-out, opacity 300ms ease-out',
+}}
 ```
 
 ### Anti-Patterns to Avoid
-- **Animating with React state per frame:** Do NOT call `setState` on every `requestAnimationFrame` tick for each piece. This causes React re-renders at 60fps. Instead, use `useRef` to store animation state and mutate SVG DOM elements directly via refs, OR batch all pieces into a single state update per frame.
-- **Using setTimeout chains:** Unreliable timing, drifts, cannot be cancelled cleanly. Use `requestAnimationFrame` with elapsed time tracking.
-- **CSS transitions on SVG attributes:** `x`, `y`, `width`, `height` on `<rect>` are SVG presentation attributes, not CSS properties. CSS transitions on them are inconsistent across browsers. Use `transform: translate()` or JS-driven attribute updates.
-- **Animating during layout:** Never trigger animations that cause DOM layout recalculation. SVG transforms and opacity are compositor-friendly and avoid layout thrashing.
+- **Animating SVG x/y attributes directly:** These are SVG presentation attributes, not CSS properties. CSS transitions on them are inconsistent across browsers. Use CSS `transform: translate()` instead, which is GPU-composited.
+- **Animating width/height:** Triggers expensive repaint. If you need scale-in effects, use `transform: scale()` instead.
+- **React state updates per frame via requestAnimationFrame:** Never use `useState` inside `requestAnimationFrame` for each piece. Let CSS handle interpolation; React only sets start/end states.
+- **`will-change` on all elements permanently:** Add `will-change: transform, opacity` only during animation, reset to `auto` after. Each `will-change` element creates a compositor layer consuming GPU memory.
+- **SMIL `<animate>` elements:** Poor React integration (declarative SVG children interfere with React's DOM diffing), limited stagger control, and messy cleanup.
+- **Conditionally mounting/unmounting pieces:** Causes SVG bounding box changes and layout shifts. Always render all pieces; control visibility with opacity and transform.
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Easing functions | Complex parametric curves | Simple `easeOutCubic: (t) => 1 - (1-t)^3` | One line, well-known, sufficient for "settle" feel |
-| Frame timing | Manual `Date.now()` tracking | `requestAnimationFrame` timestamp parameter | Browser provides high-resolution timestamps automatically |
+| Easing functions | Custom cubic-bezier math | CSS `ease-out` / `cubic-bezier()` | Browser-native, hardware-accelerated, handles edge cases |
+| Frame timing | Manual `requestAnimationFrame` loop with interpolation | CSS `transition` | CSS transitions run on compositor thread; rAF runs on main thread |
+| Animation cleanup | Manual timer tracking with complex state | `useEffect` cleanup + `useRef` for timer IDs | React lifecycle handles unmount; refs prevent stale closures |
 
-**Key insight:** This animation is simple enough that hand-rolling IS the right approach. Animation libraries (Framer Motion, GSAP, react-spring) are designed for complex interactive animations with physics, gestures, and layout animations. For sequenced SVG entrance animations on <20 elements, a custom hook is less code, zero bundle impact, and more controllable.
+**Key insight:** The entire animation system needs zero interpolation code. CSS transitions handle all per-frame work on the GPU. React's job is purely to toggle boolean states at the right times via setTimeout. This is dramatically simpler than an rAF-based approach and performs better.
 
 ## Common Pitfalls
 
-### Pitfall 1: React Re-renders Kill Performance
-**What goes wrong:** Calling `setState` 60 times per second for each animating piece causes React reconciliation on every frame, dropping below 60fps.
-**Why it happens:** Natural instinct is to store animated values in React state.
-**How to avoid:** Use `useRef` for animation state. Mutate SVG element attributes directly via `ref.current.setAttribute()` or use a single `useState` that batches all piece positions into one object update per frame.
-**Warning signs:** React DevTools shows constant re-renders during animation; Chrome Performance panel shows long "Scripting" blocks during animation.
+### Pitfall 1: SVG Transform Coordinate System Confusion
+**What goes wrong:** CSS `transform: translate(10px, 10px)` on SVG elements may not match SVG coordinate units when the SVG has a viewBox scaling.
+**Why it happens:** CSS pixels and SVG user units can differ when viewBox scales the coordinate space. The `px` unit in CSS transform inside SVG maps to SVG user units, not screen pixels.
+**How to avoid:** Use SVG user units consistently. Since the existing `<svg>` has a viewBox matching mm dimensions, CSS translate values inside it will be in SVG user units (mm). Test with known values to confirm. A `translate(80px, 0)` means 80mm in SVG space.
+**Warning signs:** Pieces slide too far or too short; animation looks different at different SVG sizes.
 
-### Pitfall 2: Memory Leaks from Uncancelled Animations
-**What goes wrong:** If the component unmounts or optimization result changes mid-animation, the `requestAnimationFrame` loop continues, trying to update unmounted DOM elements.
-**Why it happens:** Forgetting to call `cancelAnimationFrame` in cleanup.
-**How to avoid:** Store the rAF ID in a ref. Cancel in the `useEffect` cleanup function. Also cancel when skip-to-end is triggered.
+### Pitfall 2: Stale Closure in setTimeout Chains
+**What goes wrong:** Timer callbacks capture stale state values, causing animation to behave incorrectly after props change mid-animation.
+**Why it happens:** JavaScript closures capture values at creation time; React state updates don't affect already-scheduled callbacks.
+**How to avoid:** Use `useRef` for mutable values that timers need. Store timer IDs in refs for cleanup. Always clear all timers before starting a new animation.
+**Warning signs:** Animation continues after result changes; pieces animate to wrong positions.
 
-```typescript
-useEffect(() => {
-  const rafId = { current: 0 };
-  // ... start animation loop
-  rafId.current = requestAnimationFrame(tick);
+### Pitfall 3: Layout Shift When Pieces Appear
+**What goes wrong:** SVG viewBox recalculates or diagram jumps when animation starts.
+**Why it happens:** If pieces are conditionally rendered (mounted/unmounted), the SVG content bounding box changes.
+**How to avoid:** Always render ALL pieces in the DOM from the start. Control visibility with opacity:0 and transform offset. Never conditionally mount/unmount pieces during animation.
+**Warning signs:** Board diagram jumps or resizes when animation starts.
 
-  return () => cancelAnimationFrame(rafId.current);
-}, [optimizationResult]);
-```
+### Pitfall 4: will-change Memory Bloat
+**What goes wrong:** Applying `will-change: transform` to dozens of elements permanently consumes excessive GPU memory.
+**Why it happens:** Each `will-change` element gets its own compositor layer; with 30+ pieces across multiple boards, this adds up.
+**How to avoid:** Set `will-change: transform, opacity` only when animation is pending (piece not yet animated), reset to `auto` once piece reaches final position.
+**Warning signs:** High GPU memory usage in DevTools, potential frame drops on lower-end devices.
 
-### Pitfall 3: Stale Closure Over Animation State
-**What goes wrong:** The rAF callback captures stale values from the initial render, not seeing updated state.
-**Why it happens:** JavaScript closures capture variable values at creation time.
-**How to avoid:** Use refs for all mutable animation state (current time, piece positions). Only use the rAF timestamp parameter for timing.
+### Pitfall 5: Click-to-Skip Race Condition
+**What goes wrong:** Clicking to skip animation while timers are mid-flight causes partial animation states or visual flicker.
+**Why it happens:** Some timers fire between the skip action and React re-render.
+**How to avoid:** skipToEnd must: (1) clear ALL scheduled timers, (2) set activeCount to totalItems synchronously, (3) temporarily set `transition: none` so pieces jump instantly without 400ms transition animation.
+**Warning signs:** Some pieces at offset positions after skip; visual flicker during skip.
 
-### Pitfall 4: SVG Clipping Breaks Slide-In
-**What goes wrong:** Pieces sliding in from outside the board boundary are invisible because the SVG viewBox clips them, or the `overflow-hidden` container clips them.
-**Why it happens:** The SVG viewBox is set to exactly the board dimensions; pieces starting outside are clipped.
-**How to avoid:** Either (a) expand the SVG viewBox by a margin during animation and restore after, or (b) use `opacity: 0` at the start position and fade in as pieces enter the visible area, or (c) add `overflow="visible"` to the SVG during animation. Option (b) is simplest since pieces already fade in -- they become visible as they enter the board area.
+### Pitfall 6: CSS Transition Not Firing on Initial Render
+**What goes wrong:** Piece appears at final position immediately without animating, because browser batches the initial render with the state change.
+**Why it happens:** If you set the offset state and final state in the same render cycle, the browser optimizes away the transition.
+**How to avoid:** Two-phase approach: (1) render pieces at offset positions (animated=false), (2) in next frame/microtask, start the stagger sequence. Use a `requestAnimationFrame` or `setTimeout(fn, 0)` after initial mount to ensure the browser has painted the initial offset state before triggering transitions.
+**Warning signs:** First board's pieces appear instantly; subsequent boards animate correctly.
 
-### Pitfall 5: Zoom/Pan Conflicts
-**What goes wrong:** User zooms or pans during animation, causing visual glitches or the animation target positions to shift.
-**Why it happens:** The CSS `transform: scale() translate()` on the wrapper div interacts with SVG-level transforms on pieces.
-**How to avoid:** Animation transforms are in SVG coordinate space (inside the viewBox), while zoom/pan transforms are in screen space (on the wrapper div). These are independent and should not conflict. However, tooltips should be disabled during animation (already decided: "Tooltip interaction should work after animation completes, not during").
-
-### Pitfall 6: Animation Duration Doesn't Scale
-**What goes wrong:** With 2 pieces, animation feels right at 2 seconds. With 30 pieces, it takes 10+ seconds and feels tedious.
-**Why it happens:** Fixed stagger delay * piece count = linear growth.
-**How to avoid:** Cap total animation duration. Compute per-piece stagger dynamically: `stagger = Math.min(80, totalDuration / pieceCount)`. Target 2-3 seconds total regardless of piece count.
+### Pitfall 7: SVG Overflow Clipping Hides Slide-In
+**What goes wrong:** Pieces sliding in from outside the board boundary are clipped because the SVG viewBox or the `overflow-hidden` container clips them.
+**Why it happens:** The existing `overflow-hidden` class on the container div and the SVG viewBox set to board dimensions.
+**How to avoid:** Since pieces fade in simultaneously with sliding, they start at opacity 0 at the offset position. By the time they reach visible opacity, they are mostly within the board area. The slide distance should be modest (not fully off-board) so pieces are visible during most of the slide. Alternatively, use `overflow: visible` on the SVG element during animation.
+**Warning signs:** Pieces appear to "pop in" at the board edge rather than sliding smoothly.
 
 ## Code Examples
 
-### useAnimationSequence Hook (Core Pattern)
-
+### Complete Animation Utilities (Pure Functions)
 ```typescript
-import { useEffect, useRef, useCallback, useState } from 'react';
-import type { BoardLayout, PlacedPiece } from '@/lib/types';
+// animation-utils.ts -- pure functions, fully testable
 
-type AnimationPhase = 'idle' | 'playing' | 'complete';
-
-interface PieceAnimState {
-  offsetX: number;  // translate offset from final position
-  offsetY: number;
-  opacity: number;
+export interface SlideOffset {
+  dx: number;
+  dy: number;
 }
 
-interface UseAnimationSequenceReturn {
-  phase: AnimationPhase;
-  getPieceState: (boardIdx: number, pieceKey: string) => PieceAnimState;
-  getWasteOpacity: () => number;
-  skipToEnd: () => void;
+export function computeSlideOrigin(
+  piece: { x: number; y: number; width: number; height: number },
+  boardWidth: number,
+  boardHeight: number,
+  slideDistance = 80
+): SlideOffset {
+  const cx = piece.x + piece.width / 2;
+  const cy = piece.y + piece.height / 2;
+  const distances = [
+    { dx: -slideDistance, dy: 0, d: cx },                    // left
+    { dx: slideDistance, dy: 0, d: boardWidth - cx },        // right
+    { dx: 0, dy: -slideDistance, d: cy },                    // top
+    { dx: 0, dy: slideDistance, d: boardHeight - cy },       // bottom
+  ];
+  const nearest = distances.reduce((min, cur) => cur.d < min.d ? cur : min);
+  return { dx: nearest.dx, dy: nearest.dy };
 }
 
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
+export function sortPiecesForAnimation<T extends { width: number; height: number }>(
+  pieces: T[]
+): T[] {
+  return [...pieces].sort((a, b) => (b.width * b.height) - (a.width * a.height));
 }
 
-export function useAnimationSequence(
-  boards: BoardLayout[] | null,
-  enabled: boolean
-): UseAnimationSequenceReturn {
-  // Implementation drives rAF loop, computes per-piece offsets
-  // Returns getPieceState() that BoardDiagram calls for each PieceRect
-  // ...
+// Dynamically compute stagger delay to fit within time budget
+export function computeStaggerDelay(
+  pieceCount: number,
+  maxBoardDuration = 1500,  // ms max for one board
+  minDelay = 30,
+  maxDelay = 100
+): number {
+  if (pieceCount <= 1) return 0;
+  const computed = Math.floor(maxBoardDuration / pieceCount);
+  return Math.max(minDelay, Math.min(maxDelay, computed));
 }
 ```
 
-### PieceRect Integration
-
+### Waste Region Fade-In After Pieces Complete
 ```typescript
-// Modified PieceRect accepts animation offset props
-interface PieceRectProps {
-  piece: PlacedPiece;
-  units: UnitSystem;
-  animOffset?: { offsetX: number; offsetY: number; opacity: number };
-  // ... existing props
+// WasteRect enhanced with animation
+interface WasteRectProps {
+  region: WasteRegion;
+  boardIndex: number;
+  visible: boolean; // controlled by board animation completion
 }
 
-// Wrap in <g> with transform
-<g
-  transform={animOffset ? `translate(${animOffset.offsetX}, ${animOffset.offsetY})` : undefined}
-  opacity={animOffset?.opacity ?? 1}
->
-  {/* existing rect + text */}
-</g>
+export function WasteRect({ region, boardIndex, visible }: WasteRectProps) {
+  return (
+    <rect
+      x={region.x}
+      y={region.y}
+      width={region.width}
+      height={region.height}
+      fill={`url(#waste-hatch-${boardIndex})`}
+      stroke="var(--border)"
+      strokeWidth={0.5}
+      style={{
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 500ms ease-out',
+      }}
+    />
+  );
+}
 ```
 
-### Skip-to-End on Click
-
-```typescript
-// In CuttingDiagramList or BoardDiagram wrapper
-const handleSkip = useCallback(() => {
-  if (animPhase === 'playing') {
-    skipToEnd(); // Sets all pieces to final positions instantly
-  }
-}, [animPhase, skipToEnd]);
-
-// Attach to the visualization container
-<div onClick={handleSkip}>
-  {/* boards */}
-</div>
-```
+### Board Header Decision
+Board headers should appear instantly. They provide spatial context ("Board 1 of 3") that helps the viewer understand what is being animated. Animating them adds no visual value and delays the hero moment.
 
 ## State of the Art
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| SMIL `<animate>` elements | CSS/JS animation | Chrome deprecated intent ~2015, reversed, but poor DX | Use JS or CSS transforms instead |
-| jQuery.animate() | requestAnimationFrame | ~2012 | Native browser API, no library needed |
-| CSS transitions on SVG attrs | SVG transform + JS | Always inconsistent | SVG attrs are not CSS properties; use transform |
+| SMIL `<animate>` elements | CSS transitions/animations | SMIL deprecated then un-deprecated ~2016, but CSS is standard path | CSS is the recommended approach for SVG animation |
+| JS-driven rAF for all SVG animation | CSS for interpolation, JS for orchestration only | Chrome 89 (2021) GPU-accelerated SVG CSS transforms | transform/opacity on SVG elements now GPU-composited in all modern browsers |
+| jQuery.animate() / Velocity.js | Browser-native CSS transitions | 2015+ | Zero-dependency, hardware-accelerated by default |
+| Animating SVG x/y/width/height attributes | CSS transform: translate() on g elements | Ongoing best practice | Avoids layout recalculation, enables GPU compositing |
 
 **Deprecated/outdated:**
 - SMIL animation: Still works but poor React integration, hard to control programmatically
-- `element.style.x` for SVG: Not supported; SVG geometry attributes are not CSS properties in most contexts
+- Animating SVG geometry attributes (x, y, width, height): Triggers layout. Use transform instead.
+- requestAnimationFrame for simple entrance animations: Unnecessary main-thread work when CSS transitions handle it on compositor thread.
 
 ## Open Questions
 
-1. **Direct DOM mutation vs React state for animation**
-   - What we know: Direct DOM mutation (via refs) is fastest but breaks React's rendering model. Single batched state update per frame is idiomatic React but may cause unnecessary child re-renders.
-   - What's unclear: With React 19's automatic batching and ~15-20 pieces, whether batched state updates cause noticeable jank.
-   - Recommendation: Start with React state (single object with all piece positions, updated once per rAF frame). If profiling shows jank, switch to direct ref-based DOM mutation. React 19's batching should handle this fine for <30 elements.
+1. **CSS translate units inside SVG viewBox**
+   - What we know: CSS `transform: translate()` on elements inside an SVG with viewBox uses SVG user units. The existing viewBox matches mm dimensions.
+   - What's unclear: Whether `80px` translate in SVG context maps exactly to 80 SVG user units needs verification. Boards can be ~2400mm wide (8ft plywood), so 80mm offset is ~3% of board width.
+   - Recommendation: Start with slideDistance as a percentage of board dimension (e.g., 10% of the shorter board axis). Tune visually. If `px` units don't map as expected, switch to using the SVG `transform` attribute (`transform={translate(dx, dy)}`) instead of CSS style.
 
-2. **Board headers: animate or instant?**
-   - Recommendation: Show board headers instantly. They provide context for the animation ("Board 1 of 3") and animating them adds no visual value.
+2. **Transition timing for varying piece counts**
+   - What we know: 50-100ms stagger with 10-15 pieces = 500-1500ms per board. With 2-3 boards + pauses, fits in 2-3 second budget.
+   - What's unclear: Edge case with 30+ pieces on one board could exceed time budget.
+   - Recommendation: Use dynamic stagger delay: `computeStaggerDelay(pieceCount)` that caps per-board animation at ~1.5s by reducing inter-piece delay for larger boards.
 
 ## Validation Architecture
 
@@ -353,48 +461,52 @@ const handleSkip = useCallback(() => {
 | Property | Value |
 |----------|-------|
 | Framework | Vitest 4.1.0 |
-| Config file | `vitest.config.ts` |
+| Config file | vitest.config.ts |
 | Quick run command | `npx vitest run --reporter=verbose` |
-| Full suite command | `npx vitest run --reporter=verbose` |
+| Full suite command | `npx vitest run` |
 
 ### Phase Requirements to Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| VIS-04a | computeStartPosition returns correct edge position | unit | `npx vitest run src/lib/animation-utils.test.ts -x` | No -- Wave 0 |
-| VIS-04b | computeDelays produces correct stagger timing | unit | `npx vitest run src/lib/animation-utils.test.ts -x` | No -- Wave 0 |
-| VIS-04c | easeOutCubic returns correct values at boundaries | unit | `npx vitest run src/lib/animation-utils.test.ts -x` | No -- Wave 0 |
-| VIS-04d | Total animation duration stays within 2-3s for typical projects | unit | `npx vitest run src/lib/animation-utils.test.ts -x` | No -- Wave 0 |
-| VIS-04e | Animation plays smoothly at 60fps | manual-only | Visual inspection + Chrome Performance panel | N/A |
-| VIS-04f | Click-to-skip sets all pieces to final state | manual-only | Visual inspection | N/A |
-| VIS-04g | Animation replays on re-optimize | manual-only | Visual inspection | N/A |
+| VIS-04a | computeSlideOrigin returns correct edge direction | unit | `npx vitest run src/lib/animation-utils.test.ts -t "slide origin"` | No -- Wave 0 |
+| VIS-04b | sortPiecesForAnimation sorts by area descending | unit | `npx vitest run src/lib/animation-utils.test.ts -t "sort"` | No -- Wave 0 |
+| VIS-04c | computeStaggerDelay caps duration for large piece counts | unit | `npx vitest run src/lib/animation-utils.test.ts -t "stagger"` | No -- Wave 0 |
+| VIS-04d | useAnimationSequence advances activeCount over time | unit | `npx vitest run src/hooks/useAnimationSequence.test.ts` | No -- Wave 0 |
+| VIS-04e | Pieces animate at 60fps without jank | manual-only | Visual inspection in browser DevTools Performance tab | N/A |
+| VIS-04f | Click-to-skip instantly shows final state | manual-only | Click during animation, verify instant completion | N/A |
 
 ### Sampling Rate
 - **Per task commit:** `npx vitest run --reporter=verbose`
-- **Per wave merge:** `npx vitest run --reporter=verbose`
+- **Per wave merge:** `npx vitest run`
 - **Phase gate:** Full suite green before `/gsd:verify-work`
 
 ### Wave 0 Gaps
-- [ ] `src/lib/animation-utils.test.ts` -- covers VIS-04a through VIS-04d (pure function tests for start positions, delays, easing, duration capping)
+- [ ] `src/lib/animation-utils.test.ts` -- covers VIS-04a, VIS-04b, VIS-04c (pure function tests)
+- [ ] `src/hooks/useAnimationSequence.test.ts` -- covers VIS-04d (uses `vi.useFakeTimers()` for setTimeout testing in node environment)
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Project codebase: `src/components/visualization/PieceRect.tsx`, `BoardDiagram.tsx`, `CuttingDiagramList.tsx` -- current SVG rendering architecture
-- Project codebase: `src/lib/types.ts` -- PlacedPiece, BoardLayout types with x/y/width/height
-- MDN Web Docs: `requestAnimationFrame`, SVG transform attribute, CSS vs SVG attribute animation behavior
+- [MDN: CSS and JS animation performance](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/CSS_JavaScript_animation_performance) - compositor thread for transform/opacity
+- [MDN: transform-box property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/transform-box) - fill-box for SVG transform-origin
+- [Chrome DevBlog: Hardware-accelerated animations](https://developer.chrome.com/blog/hardware-accelerated-animations) - Chrome 89+ GPU acceleration for SVG CSS transforms
+- Project codebase: PieceRect.tsx, BoardDiagram.tsx, CuttingDiagramList.tsx, types.ts -- current SVG rendering architecture
 
 ### Secondary (MEDIUM confidence)
-- React 19 automatic batching behavior for setState in rAF callbacks -- based on React docs and React 18+ batching guarantees
+- [Charlie Marsh: SVG Performance](https://www.crmarsh.com/svg-performance/) - 2-5x perf improvement with CSS transforms on SVG (Khan Academy case study, confirmed 12-20fps to 52-60fps)
+- [CSS-Tricks: GPU-Accelerated SVG Animations](https://css-tricks.com/platform-news-rounded-outlines-gpu-accelerated-svg-animations-how-css-variables-are-resolved/) - Chrome GPU acceleration for SVG confirmed
+- [CSS-Tricks: Transforms on SVG Elements](https://css-tricks.com/transforms-on-svg-elements/) - cross-browser gotchas with SVG transforms and coordinate systems
+- [Smashing Magazine: CSS GPU Animation](https://www.smashingmagazine.com/2016/12/gpu-animation-doing-it-right/) - will-change best practices and compositor layer management
 
 ### Tertiary (LOW confidence)
-- None
+- [Boundev: SVG Animation CSS Tutorial](https://www.boundev.com/blog/svg-animation-css-tutorial-guide) - general SVG CSS animation patterns
 
 ## Metadata
 
 **Confidence breakdown:**
-- Standard stack: HIGH -- no external libraries, just browser APIs already available
-- Architecture: HIGH -- pattern is well-established (rAF + interpolation), codebase structure is clear
-- Pitfalls: HIGH -- common SVG animation pitfalls are well-documented; codebase inspection reveals specific concerns (viewBox clipping, overflow-hidden, zoom/pan interaction)
+- Standard stack: HIGH - zero new dependencies, using browser-native CSS transitions verified by MDN and Chrome DevBlog
+- Architecture: HIGH - CSS transitions on SVG g elements are well-documented and GPU-accelerated in all target browsers; stagger via setTimeout is standard React pattern
+- Pitfalls: HIGH - documented from multiple authoritative sources (MDN, CSS-Tricks, Chrome DevBlog) and direct analysis of existing codebase components
 
 **Research date:** 2026-03-19
-**Valid until:** 2026-06-19 (stable domain, browser APIs don't change)
+**Valid until:** 2026-06-19 (stable browser APIs, no fast-moving dependencies)
