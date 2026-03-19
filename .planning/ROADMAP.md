@@ -124,10 +124,11 @@ Plans:
   2. Dashboard shows overall waste percentage across all boards
   3. Dashboard shows per-board breakdown with individual waste amounts
   4. User can enter an optional price-per-board and see a total cost estimate
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: TBD
+- [ ] 07-01-PLAN.md — Summary calculation pure functions (computeSummaryStats, computeCostEstimate) with TDD tests
+- [ ] 07-02-PLAN.md — SummaryDashboard, BoardBreakdownList, CostEstimateInput components and page.tsx wiring
 
 ### Phase 8: Export & Sharing
 **Goal**: Users can save, print, and share their optimized cutting plans
@@ -158,5 +159,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. Optimization Engine | 1/2 | In Progress | - |
 | 5. Static Visualization | 0/2 | Planning complete | - |
 | 6. Animated Visualization | 2/2 | Complete   | 2026-03-19 |
-| 7. Summary Dashboard | 0/0 | Not started | - |
+| 7. Summary Dashboard | 0/2 | Planning complete | - |
 | 8. Export & Sharing | 0/0 | Not started | - |
