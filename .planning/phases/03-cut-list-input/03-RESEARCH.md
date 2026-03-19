@@ -6,38 +6,42 @@
 
 ## Summary
 
-Phase 3 follows the exact CRUD pattern established in Phase 2 (Board Input) -- pure functions in `lib/`, UI components in `components/cuts/`, state lifted to `page.tsx`. The existing `board-operations.ts`, `BoardForm.tsx`, `BoardEntry.tsx`, and `BoardList.tsx` provide a proven template to replicate for cut pieces.
+Phase 3 follows the exact CRUD pattern established in Phase 2 (Board Input) -- pure functions in `lib/`, UI components in `components/pieces/`, state lifted to `page.tsx`. The existing `board-operations.ts`, `BoardForm.tsx`, `BoardEntry.tsx`, and `BoardList.tsx` provide a proven template to replicate for cut pieces.
 
-The three novel aspects are: (1) a color auto-assignment system with manual override, (2) a bulk paste parser for tab/comma-separated text, and (3) a duplicate operation. None require external libraries. The color palette is a static array of hex strings; the bulk parser is a pure function splitting text lines; duplicate is a shallow copy with new ID. All three are testable pure functions.
+The three novel aspects beyond Phase 2 are: (1) a color auto-assignment system with manual override via a 12-color swatch picker, (2) a bulk paste parser for tab/comma-separated text in "label, length, width, quantity" format, and (3) a duplicate operation. None require external libraries. The color palette is a static array of 12 hex strings; the bulk parser is a pure function splitting text lines; duplicate is a shallow copy with new ID. All three are testable pure functions.
 
-**Primary recommendation:** Mirror the Phase 2 pattern exactly for CRUD, add `cut-operations.ts` with the three new pure functions (addCutPiece with auto-color, duplicateCutPiece, parseBulkCutPieces), and build UI components following the established BoardForm/BoardEntry/BoardList structure.
+**Primary recommendation:** Mirror the Phase 2 pattern exactly (PieceForm, PieceEntry, PieceList + piece-operations.ts), adding color-palette.ts for color cycling and paste-parser.ts for bulk input parsing. TDD the pure logic first, then build UI components.
 
 <user_constraints>
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
-- Form in sidebar below board section -- same inline pattern as board input
-- Cut piece entries as card list with inline edit -- consistent with board entries
-- Color auto-assigned from a palette on creation, with manual override via color picker
-- Duplicate button on each entry -- creates a copy with new ID
-- Delete via icon button with no confirmation -- consistent with boards
-- Paste tab/comma-separated list into a textarea -- parsed on submit
-- Format: "length, width, quantity, label" per line (quantity and label optional)
-- Parsed values create individual CutPiece entries with auto-assigned colors
-- Show a toggle/button to switch between single-add form and bulk-add textarea
-- 10-color palette with distinct, visible colors on both dark and light themes
-- Colors auto-assigned in order (cycling through palette)
-- Manual override via a simple color picker (click swatch to open palette)
-- Color stored as hex string in CutPiece.color field (already in types.ts)
-- React useState at page level -- same pattern as boards (lifted state)
-- Cut piece operations as pure functions in lib/cut-operations.ts
-- CutPiece type already defined in types.ts with id, dimensions, quantity, label, color, grainDirection
+- Cut piece form below the board section in sidebar -- length, width, quantity, label fields with "Add" button
+- Piece entries display as compact colored cards -- show dimensions, label, quantity, color swatch, and action buttons
+- Edit mode: clicking a piece entry makes it inline-editable (same pattern as BoardEntry) -- no modals
+- Delete: icon button on each entry, no confirmation
+- Duplicate: icon button that creates a copy with same dimensions/label/color but new ID
+- Auto-assign colors from a predefined palette when pieces are added -- cycle through 10-12 distinct colors
+- Color swatch displayed on each piece card -- small circle or square indicator
+- Manual override: clicking the color swatch shows a small color picker (simple palette of 12 colors, not a full color picker)
+- Colors are stored as hex strings in the CutPiece.color field
+- Paste button or textarea that accepts tab/comma-separated data
+- Format: "label, length, width, quantity" per line -- flexible parsing (tab or comma)
+- Parsed pieces get auto-assigned colors and added to the list
+- Show count of added pieces after paste
+- Checkbox or toggle on each piece entry -- "Has grain (no rotation)"
+- Default: unchecked (pieces can rotate freely)
+- Visual indicator on piece card when grain is set
+- Cut piece list stored in useState at page level -- matches board state pattern
+- Each piece gets unique ID via crypto.randomUUID()
+- Dimensions entered in display units, stored as mm internally
+- Default quantity is 1, default label is empty string
 
 ### Claude's Discretion
-- Exact color palette hex values
-- Quick-add textarea placeholder text
-- Form field ordering and spacing
-- Color picker UI details (inline swatches vs dropdown)
+- Specific color palette choices (aim for distinguishable, muted workshop tones)
+- Exact styling of color picker popup
+- Paste textarea sizing and positioning
+- Animation on add/remove/duplicate
 
 ### Deferred Ideas (OUT OF SCOPE)
 None -- discussion stayed within phase scope
@@ -48,13 +52,13 @@ None -- discussion stayed within phase scope
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| CUT-01 | User can add cut pieces with length and width dimensions | Mirror BoardForm pattern with dimensions inputs; addCutPiece pure function |
-| CUT-02 | User can set quantity per cut piece | Quantity field in form, same as Board quantity pattern |
-| CUT-03 | User can assign an optional label to each cut piece | Text input field in CutPieceForm; label stored on CutPiece.label |
-| CUT-04 | User can assign colors per piece type (auto-assigned with manual override) | Color palette system: auto-assign on add, swatch picker for override |
-| CUT-05 | User can quick-add pieces by pasting tab/comma-separated list | parseBulkCutPieces pure function; textarea UI with toggle |
-| CUT-06 | User can duplicate existing cut piece entries | duplicateCutPiece pure function: shallow copy + new ID + next color |
-| CUT-07 | User can remove or edit existing cut piece entries | Mirror BoardEntry/BoardList inline edit + remove pattern |
+| CUT-01 | User can add cut pieces with length and width dimensions | PieceForm component mirrors BoardForm; addPiece pure function |
+| CUT-02 | User can set quantity per cut piece | Quantity field in PieceForm, default 1, same validation as BoardForm |
+| CUT-03 | User can assign an optional label to each cut piece | Label text field in PieceForm; stored as string, default empty |
+| CUT-04 | User can assign colors per piece type (auto-assigned with manual override) | Color palette module + color swatch picker on PieceEntry |
+| CUT-05 | User can quick-add pieces by pasting tab/comma-separated list | parseBulkPieces pure function + BulkAddPieces textarea component |
+| CUT-06 | User can duplicate existing cut piece entries | duplicatePiece pure function in piece-operations.ts |
+| CUT-07 | User can remove or edit existing cut piece entries | PieceEntry inline edit (mirrors BoardEntry) + remove button |
 </phase_requirements>
 
 ## Standard Stack
@@ -65,7 +69,7 @@ None -- discussion stayed within phase scope
 | React | 19.2.4 | UI components | Already in project |
 | Next.js | 16.2.0 | Framework | Already in project |
 | Tailwind CSS | 4.x | Styling | Already in project |
-| Vitest | 4.1.x | Testing | Already in project |
+| Vitest | 4.1.0 | Testing | Already in project |
 
 ### Supporting
 No new libraries needed. All functionality is implemented with vanilla TypeScript pure functions and React state.
@@ -73,8 +77,8 @@ No new libraries needed. All functionality is implemented with vanilla TypeScrip
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| Custom swatch picker | react-colorful | Overkill -- only picking from 10 predefined colors |
-| Manual parsing | papaparse | Overkill -- format is simple 4-column CSV with known schema |
+| Custom swatch picker | react-colorful | Overkill -- only picking from 12 predefined colors |
+| Manual line parsing | papaparse | Overkill -- format is simple 4-column CSV with known schema |
 
 **Installation:**
 ```bash
@@ -86,197 +90,218 @@ No new libraries needed. All functionality is implemented with vanilla TypeScrip
 ### Recommended Project Structure
 ```
 src/
-├── lib/
-│   ├── cut-operations.ts        # Pure CRUD + color + parse + duplicate
-│   ├── cut-operations.test.ts   # Tests for all pure functions
-│   └── color-palette.ts         # Palette constants and getNextColor helper
-├── components/
-│   └── cuts/
-│       ├── CutPieceForm.tsx     # Single-add form (mirrors BoardForm)
-│       ├── CutPieceEntry.tsx    # Inline edit card (mirrors BoardEntry)
-│       ├── CutPieceList.tsx     # List with empty state (mirrors BoardList)
-│       ├── BulkAddForm.tsx      # Textarea for paste-to-add
-│       └── ColorSwatch.tsx      # Small color dot + picker popover
+  lib/
+    piece-operations.ts       # addPiece, updatePiece, removePiece, duplicatePiece
+    piece-operations.test.ts  # TDD for all CRUD operations
+    color-palette.ts          # PIECE_COLORS array + getNextColor(index)
+    color-palette.test.ts     # Color cycling tests
+    paste-parser.ts           # parseBulkPieces(text, units) -> parsed pieces
+    paste-parser.test.ts      # Parser edge case tests
+  components/
+    pieces/
+      PieceForm.tsx           # Add form: length, width, quantity, label, grain
+      PieceEntry.tsx          # Display/inline-edit card with color swatch
+      PieceList.tsx           # List with editingId state management
+      BulkAddPieces.tsx       # Paste textarea with parse + add flow
+      ColorPicker.tsx         # Simple 12-color palette popup
 ```
 
-### Pattern 1: Pure Function CRUD (Established)
-**What:** Stateless array transform functions, identical to board-operations.ts
-**When to use:** All state mutations
+### Pattern 1: Pure Function CRUD (mirror board-operations.ts)
+**What:** Stateless array transform functions for CRUD + duplicate
+**When to use:** All piece state mutations
 **Example:**
 ```typescript
-// Mirrors board-operations.ts exactly
+// src/lib/piece-operations.ts
 import type { CutPiece } from '@/lib/types';
-import { getNextColor } from '@/lib/color-palette';
 
-export function addCutPiece(
-  pieces: CutPiece[],
-  newPiece: Omit<CutPiece, 'id' | 'color'>
-): CutPiece[] {
-  return [
-    ...pieces,
-    {
-      ...newPiece,
-      id: crypto.randomUUID(),
-      color: getNextColor(pieces.length),
-    },
-  ];
+export function addPiece(pieces: CutPiece[], newPiece: Omit<CutPiece, 'id'>): CutPiece[] {
+  return [...pieces, { ...newPiece, id: crypto.randomUUID() }];
 }
 
-export function updateCutPiece(
-  pieces: CutPiece[],
-  id: string,
-  updates: Partial<Omit<CutPiece, 'id'>>
-): CutPiece[] {
-  return pieces.map(p => (p.id === id ? { ...p, ...updates } : p));
+export function updatePiece(pieces: CutPiece[], id: string, updates: Partial<Omit<CutPiece, 'id'>>): CutPiece[] {
+  return pieces.map(p => p.id === id ? { ...p, ...updates } : p);
 }
 
-export function removeCutPiece(pieces: CutPiece[], id: string): CutPiece[] {
+export function removePiece(pieces: CutPiece[], id: string): CutPiece[] {
   return pieces.filter(p => p.id !== id);
 }
 
-export function duplicateCutPiece(pieces: CutPiece[], id: string): CutPiece[] {
-  const source = pieces.find(p => p.id === id);
-  if (!source) return pieces;
-  return [
-    ...pieces,
-    {
-      ...source,
-      id: crypto.randomUUID(),
-      label: source.label ? `${source.label} (copy)` : '',
-    },
-  ];
+export function duplicatePiece(pieces: CutPiece[], id: string): CutPiece[] {
+  const original = pieces.find(p => p.id === id);
+  if (!original) return pieces;
+  const copy: CutPiece = { ...original, id: crypto.randomUUID() };
+  const index = pieces.indexOf(original);
+  const result = [...pieces];
+  result.splice(index + 1, 0, copy);
+  return result;
 }
 ```
 
-### Pattern 2: Color Palette System
-**What:** Static array of 10 hex colors, cycled by index
-**When to use:** Auto-assigning color on piece creation
+### Pattern 2: Color Auto-Assignment with Cycling
+**What:** Predefined palette of 12 visually distinct muted workshop-tone colors, cycling via modulo
+**When to use:** When adding new pieces (form or bulk)
 **Example:**
 ```typescript
 // src/lib/color-palette.ts
-export const CUT_PIECE_PALETTE = [
-  '#ef4444', // red
-  '#3b82f6', // blue
-  '#22c55e', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#14b8a6', // teal
-  '#a855f7', // purple
+// Muted workshop tones -- distinguishable on both dark and light themes
+export const PIECE_COLORS = [
+  '#5B8C5A', // sage green
+  '#4A90B8', // steel blue
+  '#C4703E', // warm copper
+  '#8E6FBA', // dusty purple
+  '#B85C5C', // muted red
+  '#5AABA0', // teal
+  '#C4A23E', // golden
+  '#7A8C5A', // olive
+  '#B87A4A', // terracotta
+  '#5A7AB8', // cornflower
+  '#BA6F8E', // rose
+  '#6FB8A0', // mint
 ] as const;
 
 export function getNextColor(currentCount: number): string {
-  return CUT_PIECE_PALETTE[currentCount % CUT_PIECE_PALETTE.length];
+  return PIECE_COLORS[currentCount % PIECE_COLORS.length];
 }
 ```
-These colors are Tailwind standard palette values at the 500 level -- they provide good contrast on both dark (bg-surface ~slate-900) and light (bg-surface ~white) backgrounds.
 
 ### Pattern 3: Bulk Paste Parser
-**What:** Pure function that parses multiline text into CutPiece data
+**What:** Pure function that parses multiline text into piece data
 **When to use:** Quick-add textarea submission
+**Important:** Format is "label, length, width, quantity" per line (label first, per CONTEXT.md)
 **Example:**
 ```typescript
-interface ParsedPiece {
-  dimensions: { length: number; width: number };
-  quantity: number;
+// src/lib/paste-parser.ts
+import type { UnitSystem } from '@/lib/types';
+import { toInternal } from '@/lib/units';
+
+export interface ParsedPiece {
   label: string;
+  length: number; // mm
+  width: number;  // mm
+  quantity: number;
+  grainDirection: boolean;
 }
 
-export function parseBulkInput(
-  text: string,
-  units: UnitSystem
-): { pieces: ParsedPiece[]; errors: string[] } {
-  const lines = text.trim().split('\n').filter(line => line.trim());
+export interface ParseResult {
+  pieces: ParsedPiece[];
+  errors: string[];
+}
+
+export function parseBulkPieces(text: string, units: UnitSystem): ParseResult {
+  const lines = text.trim().split('\n').filter(line => line.trim().length > 0);
   const pieces: ParsedPiece[] = [];
   const errors: string[] = [];
 
-  lines.forEach((line, i) => {
-    // Split on tab or comma
-    const parts = line.split(/[\t,]/).map(s => s.trim());
-    const length = parseFloat(parts[0]);
-    const width = parseFloat(parts[1]);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    // Tab delimiter takes priority over comma
+    const parts = line.includes('\t')
+      ? line.split('\t').map(s => s.trim())
+      : line.split(',').map(s => s.trim());
+
+    // Format: label, length, width[, quantity]
+    if (parts.length < 3) {
+      errors.push(`Line ${i + 1}: not enough fields (need label, length, width)`);
+      continue;
+    }
+
+    const label = parts[0];
+    const length = parseFloat(parts[1]);
+    const width = parseFloat(parts[2]);
+    const quantity = parts.length >= 4 ? parseInt(parts[3], 10) : 1;
 
     if (isNaN(length) || length <= 0 || isNaN(width) || width <= 0) {
       errors.push(`Line ${i + 1}: invalid dimensions`);
-      return;
+      continue;
     }
 
-    const quantity = parts[2] ? parseInt(parts[2], 10) : 1;
-    const label = parts[3] || '';
-
     pieces.push({
-      dimensions: {
-        length: toInternal(length, units),
-        width: toInternal(width, units),
-      },
-      quantity: isNaN(quantity) || quantity < 1 ? 1 : quantity,
       label,
+      length: toInternal(length, units),
+      width: toInternal(width, units),
+      quantity: isNaN(quantity) || quantity < 1 ? 1 : quantity,
+      grainDirection: false,
     });
-  });
+  }
 
   return { pieces, errors };
 }
 ```
 
-### Pattern 4: Lifted State (Established)
-**What:** Cut piece state alongside board state in page.tsx
+### Pattern 4: Page-Level State Integration
+**What:** Cut piece state lifted to page.tsx alongside board state
+**When to use:** Integrating pieces into the app
 **Example:**
 ```typescript
-// In page.tsx, alongside existing board state:
-const [cutPieces, setCutPieces] = useState<CutPiece[]>([]);
+// In page.tsx, add alongside existing board state:
+const [pieces, setPieces] = useState<CutPiece[]>([]);
 
-const handleAddCutPiece = useCallback(
-  (piece: Omit<CutPiece, 'id' | 'color'>) => {
-    setCutPieces(prev => addCutPiece(prev, piece));
-  },
-  []
-);
+const handleAddPiece = useCallback((piece: Omit<CutPiece, 'id'>) => {
+  setPieces(prev => addPiece(prev, piece));
+}, []);
+
+const handleDuplicatePiece = useCallback((id: string) => {
+  setPieces(prev => duplicatePiece(prev, id));
+}, []);
+// ... same pattern for update, remove
 ```
 
 ### Anti-Patterns to Avoid
-- **Class-based state management:** Project uses pure functions + useState, not classes or reducers
-- **Color in component state only:** Color MUST be stored on the CutPiece object itself (CutPiece.color), not derived at render time, because it needs to persist through edits and be used by visualization in Phase 5
-- **Parsing in the component:** Bulk parse logic must be a pure function in lib/ for testability, not inline in the textarea onChange handler
+- **Deriving color from array index at render time:** Color MUST be stored on the CutPiece object itself. If you derive it from position, deleting a piece causes all subsequent pieces to change color.
+- **Separate context provider for pieces:** The board state is lifted to page.tsx (useState), NOT a BoardContext. Pieces follow the same pattern -- page-level useState, not a PieceContext.
+- **Full color picker library:** A 12-color fixed palette is a simple grid of buttons. No need for a color wheel/picker library.
+- **Complex CSV parsing library:** The paste format is simple enough for string splitting. Papaparse adds a dependency for a 30-line function.
+- **Parsing in the component:** Bulk parse logic must be a pure function in lib/ for testability, not inline in a component.
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| UUID generation | Custom ID generator | `crypto.randomUUID()` | Browser-native, established pattern |
-| Unit conversion | Manual math in components | `toInternal()`/`toDisplay()` from lib/units.ts | Already exists, handles both systems |
-| Dimension formatting | Template string formatting | `formatDimension()` from lib/units.ts | Already handles fractions for imperial |
+| UUIDs | Custom ID generator | `crypto.randomUUID()` | Browser-native, established pattern |
+| Unit conversion | Custom math | `toInternal()` / `toDisplay()` from units.ts | Already exists, tested |
+| Dimension formatting | Custom formatter | `formatDimension()` from units.ts | Already exists, tested |
 
-**Key insight:** Nearly everything in this phase already has a pattern in Phase 2. The only truly new code is the color palette, bulk parser, and duplicate function -- all simple pure functions.
+**Key insight:** This phase primarily reuses existing infrastructure. The only new logic is color cycling, paste parsing, and the duplicate operation -- all simple pure functions.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Color Reassignment on Delete
-**What goes wrong:** Deleting a cut piece could cause colors to shift if colors are derived from array index at render time.
-**Why it happens:** If color assignment uses `pieces.indexOf(piece)` instead of storing color on the piece object.
+**What goes wrong:** Deleting a cut piece causes colors to shift if colors are derived from array index at render time.
+**Why it happens:** Using `pieces.indexOf(piece)` to determine color instead of storing it on the object.
 **How to avoid:** Store color as a property of CutPiece at creation time. Never re-derive colors from position.
 **Warning signs:** Colors changing on existing pieces when another piece is added or removed.
 
-### Pitfall 2: Bulk Paste Unit Mismatch
-**What goes wrong:** User pastes values in inches but the parser stores them as raw numbers (not converting to mm).
+### Pitfall 2: Color Picker Click Propagation
+**What goes wrong:** Clicking the color swatch to open the picker also triggers the card's click-to-edit handler.
+**Why it happens:** Event bubbling from the swatch to the parent card div.
+**How to avoid:** Use `e.stopPropagation()` on the color swatch click handler (same pattern as the delete button in BoardEntry).
+**Warning signs:** Clicking the color swatch opens edit mode instead of (or in addition to) the color picker.
+
+### Pitfall 3: Bulk Paste Unit Mismatch
+**What goes wrong:** User pastes values in inches but the parser stores them as raw numbers without converting to mm.
 **Why it happens:** Forgetting to run `toInternal()` on parsed values.
-**How to avoid:** `parseBulkInput` must accept `units` parameter and convert all dimensions through `toInternal()`.
+**How to avoid:** `parseBulkPieces` must accept `units` parameter and convert all dimensions through `toInternal()`.
 **Warning signs:** Pasted values displaying as tiny numbers (1 inch showing as 1mm = 0.04").
 
-### Pitfall 3: grainDirection Default
+### Pitfall 4: Bulk Add Color Assignment
+**What goes wrong:** All bulk-added pieces get the same color because `getNextColor` is called with the same count for all.
+**Why it happens:** Color assignment based on array length before adding, not accounting for batch offset.
+**How to avoid:** When adding N bulk pieces, use `existingPieces.length + batchIndex` for each piece's color index.
+**Warning signs:** All pasted pieces have the same color.
+
+### Pitfall 5: Tab vs Comma Ambiguity in Labels
+**What goes wrong:** Labels containing commas break comma-delimited parsing.
+**Why it happens:** Naive splitting on commas when label field might contain commas.
+**How to avoid:** Tab delimiter takes priority when detected. With comma delimiter, label is the first field (least likely to contain commas vs dimensions). Document the format clearly in the UI placeholder text.
+**Warning signs:** Labels getting truncated, dimensions parsing as NaN.
+
+### Pitfall 6: grainDirection Default
 **What goes wrong:** Forgetting to set `grainDirection: false` as default for new cut pieces.
-**Why it happens:** The CutPiece type requires it but it is easy to omit in the add function.
-**How to avoid:** Set `grainDirection: false` as default in `addCutPiece` and in `parseBulkInput`.
+**Why it happens:** The CutPiece type requires it but it's easy to omit.
+**How to avoid:** Set `grainDirection: false` as default in addPiece, in parseBulkPieces, and in the form's onSubmit.
 **Warning signs:** TypeScript compile error (good) or undefined grain direction causing issues in Phase 4.
 
-### Pitfall 4: Tab vs Comma Ambiguity
-**What goes wrong:** Labels containing commas break the parser.
-**Why it happens:** Splitting on comma when label is the last field and might contain commas.
-**How to avoid:** Tab is the primary delimiter when detected; fall back to comma only when no tabs present. Or: label is always the last field, so join remaining parts after the first 3 columns.
-**Warning signs:** Labels getting truncated or extra pieces being created.
-
-### Pitfall 5: Empty State After Form Clear
+### Pitfall 7: Empty State After Form Clear
 **What goes wrong:** Form does not clear after successful add, or clears on failed validation.
 **Why it happens:** Reset logic not tied to the success path.
 **How to avoid:** Follow BoardForm pattern: reset fields inside handleSubmit after calling onAdd.
@@ -284,61 +309,72 @@ const handleAddCutPiece = useCallback(
 
 ## Code Examples
 
-### CutPieceEntry with Color Swatch and Duplicate Button
+### PieceEntry with Color Swatch and Action Buttons
 ```typescript
-// Key addition vs BoardEntry: color indicator + duplicate button
+// Source: derived from existing BoardEntry pattern
+// Key additions vs BoardEntry: color swatch, label display, duplicate button, grain indicator
 return (
   <div className="p-3 rounded border border-border bg-surface-alt mb-2 flex items-center gap-2">
-    <div
-      className="w-4 h-4 rounded-full flex-shrink-0"
+    <button
+      className="w-4 h-4 rounded-full flex-shrink-0 border border-border"
       style={{ backgroundColor: piece.color }}
+      onClick={(e) => { e.stopPropagation(); toggleColorPicker(); }}
+      aria-label="Change color"
     />
-    <div className="flex-1">
+    <div className="flex-1 cursor-pointer" onClick={startEdit}>
+      {piece.label && (
+        <span className="text-xs text-text-secondary block">{piece.label}</span>
+      )}
       <span className="text-sm text-text-primary">
         {formatDimension(piece.dimensions.length, units)} x{' '}
         {formatDimension(piece.dimensions.width, units)}
       </span>
-      {piece.label && (
-        <span className="text-xs text-text-secondary ml-2">{piece.label}</span>
-      )}
       <span className="text-xs text-text-secondary ml-2">qty: {piece.quantity}</span>
+      {piece.grainDirection && (
+        <span className="text-xs text-accent ml-1" title="Has grain direction">G</span>
+      )}
     </div>
-    <button onClick={() => onDuplicate(piece.id)} aria-label="Duplicate piece">
-      {/* duplicate icon */}
-    </button>
-    <button onClick={() => onRemove(piece.id)} aria-label="Remove piece">
-      X
-    </button>
+    <button onClick={() => onDuplicate(piece.id)} aria-label="Duplicate piece">D</button>
+    <button onClick={() => onRemove(piece.id)} aria-label="Remove piece">X</button>
   </div>
 );
 ```
 
-### Color Swatch Picker (Manual Override)
+### ColorPicker Component
 ```typescript
-// Simple inline swatch grid -- no external library needed
-function ColorPicker({ value, onChange }: { value: string; onChange: (color: string) => void }) {
-  const [open, setOpen] = useState(false);
+// Source: project convention -- no external library
+'use client';
+import { useState, useRef, useEffect } from 'react';
+import { PIECE_COLORS } from '@/lib/color-palette';
+
+interface ColorPickerProps {
+  currentColor: string;
+  onSelect: (color: string) => void;
+  onClose: () => void;
+}
+
+export function ColorPicker({ currentColor, onSelect, onClose }: ColorPickerProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose]);
+
   return (
-    <div className="relative">
-      <button
-        type="button"
-        className="w-6 h-6 rounded-full border border-border"
-        style={{ backgroundColor: value }}
-        onClick={() => setOpen(!open)}
-      />
-      {open && (
-        <div className="absolute z-10 mt-1 p-2 bg-surface border border-border rounded shadow-lg grid grid-cols-5 gap-1">
-          {CUT_PIECE_PALETTE.map(color => (
-            <button
-              key={color}
-              type="button"
-              className={`w-6 h-6 rounded-full ${color === value ? 'ring-2 ring-accent' : ''}`}
-              style={{ backgroundColor: color }}
-              onClick={() => { onChange(color); setOpen(false); }}
-            />
-          ))}
-        </div>
-      )}
+    <div ref={ref} className="absolute z-10 p-2 bg-surface border border-border rounded shadow-lg grid grid-cols-4 gap-1">
+      {PIECE_COLORS.map(color => (
+        <button
+          key={color}
+          onClick={() => onSelect(color)}
+          className={`w-6 h-6 rounded-full border-2 ${color === currentColor ? 'border-accent' : 'border-transparent'}`}
+          style={{ backgroundColor: color }}
+          aria-label={`Select color ${color}`}
+        />
+      ))}
     </div>
   );
 }
@@ -350,63 +386,66 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (color: str
 |--------------|------------------|--------------|--------|
 | useReducer for complex state | useState + pure functions | Project convention | Keep consistency with Phase 2 |
 | External color picker libs | Predefined palette swatch grid | Project decision | No dependency, simpler UX |
+| Class-based state | Pure function transforms | Phase 2 decision | Testable, immutable, React-friendly |
 
 ## Open Questions
 
 1. **Grain direction toggle in Phase 3 vs Phase 4**
-   - What we know: CutPiece type has `grainDirection: boolean`, OPT-03 is Phase 4
-   - What's unclear: Should the grain direction toggle appear in the cut piece form now, or wait for Phase 4?
-   - Recommendation: Include it as a disabled/hidden field now (default false), expose the toggle in Phase 4 when optimization needs it. Or include a simple checkbox now since the type already supports it -- low effort, good UX.
+   - What we know: CutPiece type has `grainDirection: boolean`. OPT-03 is Phase 4 ("User can mark pieces with grain direction constraint"). CONTEXT.md for Phase 3 explicitly includes a grain direction checkbox.
+   - What's unclear: Whether Phase 3's grain toggle fully satisfies OPT-03 or if Phase 4 adds more.
+   - Recommendation: Include the grain direction checkbox in Phase 3 as specified in CONTEXT.md. Phase 4 will consume this field for optimization -- it does not need to re-implement the UI.
 
 ## Validation Architecture
 
 ### Test Framework
 | Property | Value |
 |----------|-------|
-| Framework | Vitest 4.1.x |
+| Framework | Vitest 4.1.0 |
 | Config file | `vitest.config.ts` |
-| Quick run command | `npx vitest run src/lib/cut-operations.test.ts` |
-| Full suite command | `npx vitest run` |
+| Quick run command | `npx vitest run --reporter=verbose` |
+| Full suite command | `npx vitest run --reporter=verbose` |
 
-### Phase Requirements to Test Map
+### Phase Requirements -> Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| CUT-01 | Add cut piece with dimensions | unit | `npx vitest run src/lib/cut-operations.test.ts -t "addCutPiece"` | No -- Wave 0 |
-| CUT-02 | Set quantity per cut piece | unit | `npx vitest run src/lib/cut-operations.test.ts -t "quantity"` | No -- Wave 0 |
-| CUT-03 | Assign optional label | unit | `npx vitest run src/lib/cut-operations.test.ts -t "label"` | No -- Wave 0 |
-| CUT-04 | Auto-assign and override color | unit | `npx vitest run src/lib/cut-operations.test.ts -t "color"` | No -- Wave 0 |
-| CUT-05 | Bulk paste parsing | unit | `npx vitest run src/lib/cut-operations.test.ts -t "parseBulk"` | No -- Wave 0 |
-| CUT-06 | Duplicate cut piece | unit | `npx vitest run src/lib/cut-operations.test.ts -t "duplicate"` | No -- Wave 0 |
-| CUT-07 | Edit and remove cut pieces | unit | `npx vitest run src/lib/cut-operations.test.ts -t "update\|remove"` | No -- Wave 0 |
+| CUT-01 | addPiece creates piece with dimensions | unit | `npx vitest run src/lib/piece-operations.test.ts -t "addPiece"` | No -- Wave 0 |
+| CUT-02 | addPiece stores quantity | unit | `npx vitest run src/lib/piece-operations.test.ts -t "quantity"` | No -- Wave 0 |
+| CUT-03 | addPiece stores label | unit | `npx vitest run src/lib/piece-operations.test.ts -t "label"` | No -- Wave 0 |
+| CUT-04 | getNextColor cycles through palette | unit | `npx vitest run src/lib/color-palette.test.ts` | No -- Wave 0 |
+| CUT-05 | parseBulkPieces parses CSV/TSV correctly | unit | `npx vitest run src/lib/paste-parser.test.ts` | No -- Wave 0 |
+| CUT-06 | duplicatePiece copies with new ID | unit | `npx vitest run src/lib/piece-operations.test.ts -t "duplicatePiece"` | No -- Wave 0 |
+| CUT-07 | updatePiece/removePiece work correctly | unit | `npx vitest run src/lib/piece-operations.test.ts -t "updatePiece\|removePiece"` | No -- Wave 0 |
 
 ### Sampling Rate
-- **Per task commit:** `npx vitest run src/lib/cut-operations.test.ts`
-- **Per wave merge:** `npx vitest run`
+- **Per task commit:** `npx vitest run --reporter=verbose`
+- **Per wave merge:** `npx vitest run --reporter=verbose`
 - **Phase gate:** Full suite green before `/gsd:verify-work`
 
 ### Wave 0 Gaps
-- [ ] `src/lib/cut-operations.test.ts` -- covers CUT-01 through CUT-07
-- [ ] `src/lib/color-palette.test.ts` -- covers color cycling and palette validation (optional, can be in cut-operations tests)
+- [ ] `src/lib/piece-operations.test.ts` -- covers CUT-01, CUT-02, CUT-03, CUT-06, CUT-07
+- [ ] `src/lib/color-palette.test.ts` -- covers CUT-04
+- [ ] `src/lib/paste-parser.test.ts` -- covers CUT-05
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing codebase: `src/lib/board-operations.ts`, `BoardForm.tsx`, `BoardEntry.tsx`, `BoardList.tsx` -- direct pattern to replicate
-- Existing codebase: `src/lib/types.ts` -- CutPiece interface already defined
-- Existing codebase: `src/lib/board-operations.test.ts` -- test pattern to replicate
+- Existing codebase: `src/lib/board-operations.ts`, `BoardForm.tsx`, `BoardEntry.tsx`, `BoardList.tsx` -- direct patterns to mirror
+- Existing codebase: `src/lib/types.ts` -- CutPiece interface already fully defined
+- Existing codebase: `src/lib/board-operations.test.ts` -- test style and structure to follow
+- Existing codebase: `src/app/page.tsx` -- page-level state lifting pattern
 
 ### Secondary (MEDIUM confidence)
-- Tailwind CSS color palette (500 level values) -- well-known, stable across versions
+- None needed -- this phase uses only existing project patterns and vanilla React/TypeScript
 
 ### Tertiary (LOW confidence)
-- None
+- Color palette choices are aesthetic recommendations, will need visual validation against both themes
 
 ## Metadata
 
 **Confidence breakdown:**
-- Standard stack: HIGH -- no new libraries, all patterns established in Phase 2
-- Architecture: HIGH -- direct replication of board input pattern with minor additions
-- Pitfalls: HIGH -- pitfalls are straightforward and derive from the known codebase patterns
+- Standard stack: HIGH -- no new dependencies, all existing libraries
+- Architecture: HIGH -- direct mirror of Phase 2 board input pattern, established in codebase
+- Pitfalls: HIGH -- based on actual code review of BoardEntry event handling patterns
 
 **Research date:** 2026-03-19
-**Valid until:** 2026-04-19 (stable -- no external dependencies or fast-moving libraries)
+**Valid until:** 2026-04-19 (stable -- no external dependencies or fast-moving APIs)
