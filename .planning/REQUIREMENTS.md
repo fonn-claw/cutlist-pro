@@ -26,9 +26,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Units
 
-- [ ] **UNIT-01**: App displays imperial units (inches) by default
-- [ ] **UNIT-02**: User can toggle between imperial and metric (mm) units
-- [ ] **UNIT-03**: Unit toggle converts all displayed values without losing precision
+- [x] **UNIT-01**: App displays imperial units (inches) by default
+- [x] **UNIT-02**: User can toggle between imperial and metric (mm) units
+- [x] **UNIT-03**: Unit toggle converts all displayed values without losing precision
 
 ### Optimization
 
@@ -102,13 +102,48 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| *(populated by roadmapper)* | | |
+| DES-01 | Phase 1: Foundation & Design System | Pending |
+| DES-02 | Phase 1: Foundation & Design System | Pending |
+| DES-03 | Phase 1: Foundation & Design System | Pending |
+| DES-04 | Phase 1: Foundation & Design System | Pending |
+| DES-05 | Phase 1: Foundation & Design System | Pending |
+| UNIT-01 | Phase 1: Foundation & Design System | Complete |
+| UNIT-02 | Phase 1: Foundation & Design System | Complete |
+| UNIT-03 | Phase 1: Foundation & Design System | Complete |
+| BOARD-01 | Phase 2: Board Input | Pending |
+| BOARD-02 | Phase 2: Board Input | Pending |
+| BOARD-03 | Phase 2: Board Input | Pending |
+| BOARD-04 | Phase 2: Board Input | Pending |
+| CUT-01 | Phase 3: Cut List Input | Pending |
+| CUT-02 | Phase 3: Cut List Input | Pending |
+| CUT-03 | Phase 3: Cut List Input | Pending |
+| CUT-04 | Phase 3: Cut List Input | Pending |
+| CUT-05 | Phase 3: Cut List Input | Pending |
+| CUT-06 | Phase 3: Cut List Input | Pending |
+| CUT-07 | Phase 3: Cut List Input | Pending |
+| OPT-01 | Phase 4: Optimization Engine | Pending |
+| OPT-02 | Phase 4: Optimization Engine | Pending |
+| OPT-03 | Phase 4: Optimization Engine | Pending |
+| OPT-04 | Phase 4: Optimization Engine | Pending |
+| VIS-01 | Phase 5: Static Visualization | Pending |
+| VIS-02 | Phase 5: Static Visualization | Pending |
+| VIS-03 | Phase 5: Static Visualization | Pending |
+| VIS-05 | Phase 5: Static Visualization | Pending |
+| VIS-06 | Phase 5: Static Visualization | Pending |
+| VIS-04 | Phase 6: Animated Visualization | Pending |
+| SUM-01 | Phase 7: Summary Dashboard | Pending |
+| SUM-02 | Phase 7: Summary Dashboard | Pending |
+| SUM-03 | Phase 7: Summary Dashboard | Pending |
+| SUM-04 | Phase 7: Summary Dashboard | Pending |
+| EXP-01 | Phase 8: Export & Sharing | Pending |
+| EXP-02 | Phase 8: Export & Sharing | Pending |
+| EXP-03 | Phase 8: Export & Sharing | Pending |
 
 **Coverage:**
-- v1 requirements: 30 total
-- Mapped to phases: 0
-- Unmapped: 30 ⚠️
+- v1 requirements: 36 total
+- Mapped to phases: 36
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*
