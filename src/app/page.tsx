@@ -13,6 +13,7 @@ import { BoardList } from '@/components/boards/BoardList';
 import { CutPieceForm } from '@/components/cuts/CutPieceForm';
 import { CutPieceList } from '@/components/cuts/CutPieceList';
 import { BulkAddForm } from '@/components/cuts/BulkAddForm';
+import { KerfInput } from '@/components/settings/KerfInput';
 
 export default function Home() {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -20,6 +21,7 @@ export default function Home() {
   const [prefilledWidth, setPrefilledWidth] = useState<number | undefined>();
   const [cutPieces, setCutPieces] = useState<CutPiece[]>([]);
   const [cutInputMode, setCutInputMode] = useState<'single' | 'bulk'>('single');
+  const [kerf, setKerf] = useState<number>(3.175);
 
   const handleAdd = useCallback((board: Omit<Board, 'id'>) => {
     setBoards(prev => addBoard(prev, board));
@@ -76,6 +78,10 @@ export default function Home() {
             onUpdate={handleUpdate}
             onRemove={handleRemove}
           />
+          <div className="border-t border-border my-4 pt-4">
+            <h3 className="text-sm font-semibold text-text-primary mb-2">Settings</h3>
+            <KerfInput kerfMm={kerf} onKerfChange={setKerf} />
+          </div>
           <div className="border-t border-border my-4 pt-4">
             <h3 className="text-sm font-semibold text-text-primary mb-2">Cut Pieces</h3>
             <div className="flex gap-2 mb-3">
