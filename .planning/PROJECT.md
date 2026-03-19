@@ -12,30 +12,29 @@ The animated cut layout visualization must clearly show optimized piece placemen
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Add stock boards with dimensions (length × width) and quantity — Phase 2
+- ✓ Common board presets (4×8 plywood, 1×6 board, etc.) — Phase 2
+- ✓ Support imperial (inches, default) and metric (mm) units with toggle — Phase 1
+- ✓ Add cut pieces with dimensions, quantity, and optional label — Phase 3
+- ✓ Color assignment per piece type (auto or manual) — Phase 3
+- ✓ Quick-add: paste a list or duplicate entries — Phase 3
+- ✓ Guillotine cut bin-packing optimization algorithm — Phase 4
+- ✓ Configurable kerf (blade width) setting — Phase 4
+- ✓ Grain direction option for pieces — Phase 4
+- ✓ SVG visualization with color-coded, labeled pieces on boards — Phase 5
+- ✓ Waste areas shown in distinct pattern/color — Phase 5
+- ✓ Hover tooltips showing piece dimensions and label — Phase 5
+- ✓ Zoom and pan on large layouts — Phase 5
+- ✓ Dark theme by default with light theme toggle — Phase 1
+- ✓ Responsive design — must work on tablet — Phase 1
 
 ### Active
 
-- [ ] Add stock boards with dimensions (length × width) and quantity
-- [ ] Common board presets (4×8 plywood, 1×6 board, etc.)
-- [ ] Support imperial (inches, default) and metric (mm) units with toggle
-- [ ] Add cut pieces with dimensions, quantity, and optional label
-- [ ] Color assignment per piece type (auto or manual)
-- [ ] Quick-add: paste a list or duplicate entries
-- [ ] Guillotine cut bin-packing optimization algorithm
-- [ ] Configurable kerf (blade width) setting
-- [ ] Grain direction option for pieces
-- [ ] SVG visualization with color-coded, labeled pieces on boards
 - [ ] Animated optimization — pieces slide/fade into place
-- [ ] Waste areas shown in distinct pattern/color
-- [ ] Hover tooltips showing piece dimensions and label
-- [ ] Zoom and pan on large layouts
 - [ ] Summary dashboard: boards needed, waste %, cost estimate, per-board breakdown
 - [ ] Export as PNG
 - [ ] Print-friendly view
 - [ ] Share via URL (encode state in URL)
-- [ ] Dark theme by default with light theme toggle
-- [ ] Responsive design — must work on tablet
 
 ### Out of Scope
 
@@ -80,4 +79,4 @@ The animated cut layout visualization must clearly show optimized piece placemen
 | Stack inputs above viz on mobile | Natural reading flow on narrow screens | — Pending |
 
 ---
-*Last updated: 2026-03-19 after initialization*
+*Last updated: 2026-03-19 after Phase 5*
