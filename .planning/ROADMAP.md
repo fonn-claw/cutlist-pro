@@ -48,10 +48,11 @@ Plans:
   2. User can set a quantity for each board entry (e.g., "I have 3 of these")
   3. User can select from a preset list of common boards (4x8 plywood, 1x6, 2x4, etc.) that auto-fills dimensions
   4. User can edit or remove any existing board entry
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — Board presets data and CRUD operations with TDD tests
+- [ ] 02-02-PLAN.md — Board UI components (form, list, presets dropdown) and page wiring
 
 ### Phase 3: Cut List Input
 **Goal**: Users can define all the pieces they need to cut, with labels, colors, and bulk entry
@@ -151,7 +152,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Design System | 0/2 | Planning complete | - |
-| 2. Board Input | 0/0 | Not started | - |
+| 2. Board Input | 0/2 | Planning complete | - |
 | 3. Cut List Input | 0/0 | Not started | - |
 | 4. Optimization Engine | 0/0 | Not started | - |
 | 5. Static Visualization | 0/0 | Not started | - |
