@@ -112,8 +112,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Animation utility functions (easing, start positions, stagger delays) with TDD tests and useAnimationSequence rAF hook
-- [ ] 06-02-PLAN.md — Wire animation into PieceRect, WasteRect, BoardDiagram, CuttingDiagramList with click-to-skip and visual verification
+- [ ] 06-01-PLAN.md — Animation utility pure functions (slide origin, sort, stagger delay) with TDD tests and useAnimationSequence setTimeout hook
+- [ ] 06-02-PLAN.md — Wire CSS transition animation into PieceRect, WasteRect, BoardDiagram, CuttingDiagramList with click-to-skip and visual verification
 
 ### Phase 7: Summary Dashboard
 **Goal**: Users see at a glance how many boards they need, how much waste they have, and what it will cost
