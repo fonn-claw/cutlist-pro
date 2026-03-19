@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-This phase delivers the guillotine bin-packing optimization algorithm. Given a list of boards and cut pieces, it computes optimal layouts using only guillotine (straight-through) cuts, respecting kerf width and grain direction constraints. No visualization — just the algorithm producing layout data that Phase 5 will render.
+This phase delivers the guillotine bin-packing optimization algorithm. Takes boards and cut pieces as input, produces cutting layouts as output. Includes kerf width setting, grain direction support, and an "Optimize" button. No visualization — just the computation engine and the trigger.
 
 </domain>
 
@@ -14,31 +14,33 @@ This phase delivers the guillotine bin-packing optimization algorithm. Given a l
 ## Implementation Decisions
 
 ### Algorithm Approach
-- Guillotine bin-packing: pieces placed via recursive splitting of available rectangles
-- First Fit Decreasing heuristic: sort pieces by area (largest first), place each in first board with space
-- If a piece doesn't fit any existing board, start a new board from the available stock
-- Kerf accounted for by expanding piece dimensions during placement (piece + kerf on each cut side)
+- Guillotine bin-packing: recursively split available space with horizontal or vertical cuts
+- First-fit decreasing heuristic: sort pieces by area (largest first), try each board before opening a new one
+- Try both orientations (horizontal-first and vertical-first splits) and keep the better result
+- Pieces with grainDirection=true are never rotated — only placed in their original orientation
 
-### Kerf Configuration
-- Default kerf: 1/8" (3.175mm) — standard table saw blade width
-- User-configurable via a settings input (stored in mm internally)
-- Kerf applied between cuts, not on board edges
+### Kerf Handling
+- Kerf width stored in Settings.kerf (already defined in types.ts, in mm)
+- Default kerf: 1/8" (3.175mm) — standard table saw blade
+- Kerf is subtracted from available space after each cut — pieces cannot overlap the kerf gap
+- Kerf setting input in the sidebar settings area (simple number input)
 
-### Grain Direction
-- Pieces marked with grainDirection=true cannot be rotated during placement
-- Pieces with grainDirection=false can be rotated 90 degrees if it produces a better fit
-- Algorithm tries both orientations for rotatable pieces
+### Data Flow
+- Input: Board[] (from Phase 2 state) + CutPiece[] (from Phase 3 state) + Settings (kerf)
+- Output: CuttingLayout — array of BoardLayout, each containing placed pieces with x,y positions
+- "Optimize" button in the main area or header — triggers computation
+- Results stored in React state at page level for visualization phases to consume
 
-### Output Data Structure
-- Result contains: array of board layouts, each with placed pieces (position x,y + dimensions) and waste regions
-- Unplaced pieces tracked separately (if boards run out)
-- Total waste calculation per board and overall
+### Output Types
+- PlacedPiece: CutPiece reference + x, y position + rotated boolean + board index
+- BoardLayout: board reference + array of PlacedPieces + waste area
+- CuttingLayout: array of BoardLayouts + summary stats (total boards used, total waste)
 
 ### Claude's Discretion
-- Specific placement algorithm variant (shelf-based vs recursive guillotine)
-- Tie-breaking heuristics when multiple placements score equally
-- Performance optimization details
-- Exact data structure field names for layout results
+- Specific algorithm implementation details and optimizations
+- Whether to use a web worker for computation (recommended if >100 pieces)
+- Exact placement of the kerf input and optimize button
+- Error handling for edge cases (pieces larger than any board, etc.)
 
 </decisions>
 
@@ -46,28 +48,30 @@ This phase delivers the guillotine bin-packing optimization algorithm. Given a l
 ## Existing Code Insights
 
 ### Reusable Assets
-- `src/lib/types.ts` — Board, CutPiece, Settings interfaces (with kerf field)
-- `src/lib/units.ts` — Unit conversion utilities
-- All dimensions already stored in mm internally
+- `Board` and `CutPiece` types from `src/lib/types.ts`
+- `Settings` type with `kerf: number` field already defined
+- Board state (useState<Board[]>) and CutPiece state (useState<CutPiece[]>) in page.tsx
+- `useUnits()` for displaying kerf value in current unit
 
 ### Established Patterns
-- Pure functions in lib/ with TDD tests
-- No UI dependencies — algorithm is pure TypeScript
+- Pure functions in src/lib/ with TDD tests
+- Page-level state lifting
+- Inline form elements in sidebar
 
 ### Integration Points
-- Algorithm takes Board[] and CutPiece[] as input (from page.tsx state)
-- Output feeds Phase 5 (Static Visualization) — SVG rendering of layouts
-- Output feeds Phase 7 (Summary Dashboard) — waste calculations, board counts
-- "Optimize" button will be added in Phase 5 to trigger the algorithm
+- Algorithm consumes Board[] and CutPiece[] from page state
+- Output feeds Phase 5 (Static Visualization) and Phase 7 (Summary Dashboard)
+- Kerf setting may go in sidebar or header settings area
+- "Optimize" button triggers computation and stores result in page state
 
 </code_context>
 
 <specifics>
 ## Specific Ideas
 
-- Algorithm must produce layouts using ONLY guillotine cuts (no irregular nesting)
-- Must handle real-world scenarios: 20+ pieces across multiple boards
-- Performance should be fast enough for interactive use (<1 second for typical projects)
+- Algorithm must produce valid guillotine cuts — every cut goes edge-to-edge (no L-shaped cuts)
+- Performance target: <1 second for typical project (10 boards, 50 pieces)
+- Should handle edge case where pieces don't fit on any available board gracefully
 
 </specifics>
 
