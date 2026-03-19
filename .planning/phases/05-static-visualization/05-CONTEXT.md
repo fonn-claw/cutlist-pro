@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-This phase delivers SVG cutting diagrams that render the optimization results. Each board displays as an SVG with pieces laid out at their computed positions, color-coded and labeled. Waste areas are visually distinct. Users can hover for tooltips, zoom and pan. No animation — that's Phase 6.
+This phase delivers SVG cutting diagrams — each board rendered as an SVG with placed pieces at their computed positions. Pieces are color-coded and labeled, waste areas are visually distinct, tooltips show piece details on hover, and users can zoom/pan. No animation — that's Phase 6.
 
 </domain>
 
@@ -14,34 +14,39 @@ This phase delivers SVG cutting diagrams that render the optimization results. E
 ## Implementation Decisions
 
 ### SVG Rendering
-- One SVG per board — each board renders as a separate diagram
-- Pieces rendered as colored rectangles at computed x,y positions from OptimizationResult
-- Piece colors come from CutPiece.color (already assigned in Phase 3)
-- Labels show piece name and dimensions inside each rectangle (if space allows)
-- Waste/unused areas rendered as hatched/crosshatch pattern rectangles in a muted color
+- Each BoardLayout from OptimizationResult renders as a separate SVG diagram
+- SVG viewBox matches board dimensions (in mm internally, scaled for display)
+- Pieces rendered as filled rectangles at their x,y positions with the piece's assigned color
+- Piece labels (name + dimensions) rendered as text inside or beside the rectangle
+- Scale factor computed to fit board SVG within the main area width
+
+### Waste Display
+- Waste/unused areas shown with a distinct crosshatch or diagonal line pattern
+- Use a lighter, muted color (e.g., zinc-800 in dark mode, zinc-200 in light mode) for waste areas
+- Waste regions come from OptimizationResult.boardLayouts[].wasteRegions
 
 ### Tooltips
-- Hover over any piece shows tooltip with: label, dimensions (in current unit), and quantity info
-- Use a simple positioned div tooltip (no library needed)
-- Tooltip follows cursor or anchors to piece
+- Hovering over a piece shows a tooltip with: label, dimensions (in current units), quantity info
+- Tooltip positioned near the mouse cursor, not overlapping the piece
+- Simple div tooltip, not a library — positioned absolutely relative to the SVG container
 
-### Zoom and Pan
-- Mouse wheel to zoom, click-drag to pan on the SVG container
-- Use CSS transform (scale + translate) on a wrapper div — simple, no library needed
-- Reset zoom button to return to fit-all view
-- Minimum zoom: fit entire board, maximum zoom: 4x
+### Zoom & Pan
+- Mouse wheel zooms in/out centered on cursor position
+- Click-and-drag pans the view when zoomed in
+- Reset zoom button to return to fit-to-container view
+- Implement via SVG viewBox manipulation or CSS transform on a wrapper
 
 ### Layout
-- Board diagrams stack vertically in the main area
-- Each board has a header showing "Board N of M" with board dimensions
-- Boards with no placed pieces are not shown
+- Board diagrams displayed vertically in the main area, one below another
+- Board label above each diagram (e.g., "Board 1: 48" × 96"")
+- When no optimization result exists, keep the existing empty state message
 
 ### Claude's Discretion
-- Exact waste area pattern (hatching angle, density)
-- Tooltip positioning logic
-- Zoom/pan interaction details (smooth vs discrete)
-- SVG viewBox calculation approach
-- Label font size scaling with zoom
+- Exact crosshatch pattern for waste areas
+- Tooltip styling details
+- Zoom step size and animation smoothness
+- Whether to use SVG viewBox or CSS transform for zoom/pan
+- Board diagram spacing and margins
 
 </decisions>
 
@@ -49,34 +54,33 @@ This phase delivers SVG cutting diagrams that render the optimization results. E
 ## Existing Code Insights
 
 ### Reusable Assets
-- `src/lib/types.ts` — OptimizationResult, BoardLayout, PlacedPiece, WasteRegion types
-- `src/lib/optimizer.ts` — optimize() function producing layout data
-- `src/lib/units.ts` — formatDimension for tooltip display
-- `src/contexts/UnitContext.tsx` — useUnits for current unit system
-- `src/components/layout/MainArea.tsx` — Container for visualization
-- `src/app/page.tsx` — Has optimizationResult state from Phase 4
+- `OptimizationResult` type with `boardLayouts[]` containing `placedPieces[]` and `wasteRegions[]`
+- `PlacedPiece` has x, y, dimensions, rotated, color, label fields
+- `formatDimension()` for displaying dimensions in current unit system
+- `useUnits()` for accessing current unit system
+- `MainArea` component — currently shows empty state, will host visualizations
+- Page-level `optimizationResult` state from Phase 4
 
 ### Established Patterns
-- React client components with "use client"
-- Semantic color tokens for theming
-- Props-based data flow from page.tsx
+- Components in src/components/ with 'use client' directive
+- Tailwind dark: variant for theme styling
+- Semantic color tokens
 
 ### Integration Points
-- BoardLayout[] from optimizationResult.boardLayouts drives the SVG rendering
-- MainArea currently shows basic result summary — replace with SVG diagrams
+- Visualization renders inside MainArea component
+- Consumes OptimizationResult from page state (passed as prop)
 - Phase 6 will add animation on top of these static SVGs
-- Phase 7 (Summary Dashboard) will also use optimization result data
-- Phase 8 (Export) will need to capture these SVGs for PNG export
+- Phase 7 summary dashboard will appear alongside or below visualization
 
 </code_context>
 
 <specifics>
 ## Specific Ideas
 
-- SVG should look clean and professional — the "wow" moment for the app
-- Colors must work on both dark and light themes
-- Waste areas should be clearly distinguishable but not visually overwhelming
-- Labels inside pieces should be readable at default zoom
+- SVG is the right choice — native browser support, scalable, will be animatable in Phase 6
+- Pieces should use their CutPiece.color for fills — these are the auto-assigned or user-chosen colors from Phase 3
+- Keep diagrams clean and readable — this is the hero feature area
+- Kerf gaps should be visible between pieces (thin lines of background showing through)
 
 </specifics>
 
