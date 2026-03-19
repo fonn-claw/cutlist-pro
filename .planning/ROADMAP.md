@@ -109,10 +109,11 @@ Plans:
   1. When user clicks "Optimize", pieces animate into their positions (slide/fade) rather than appearing instantly
   2. Animation plays smoothly at 60fps without jank or layout shifts
   3. Animation sequence is visually compelling in a 15-second screen recording
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
+- [ ] 06-01-PLAN.md — Animation utility functions (easing, start positions, stagger delays) with TDD tests and useAnimationSequence rAF hook
+- [ ] 06-02-PLAN.md — Wire animation into PieceRect, WasteRect, BoardDiagram, CuttingDiagramList with click-to-skip and visual verification
 
 ### Phase 7: Summary Dashboard
 **Goal**: Users see at a glance how many boards they need, how much waste they have, and what it will cost
@@ -156,6 +157,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 3. Cut List Input | 1/2 | In Progress|  |
 | 4. Optimization Engine | 1/2 | In Progress | - |
 | 5. Static Visualization | 0/2 | Planning complete | - |
-| 6. Animated Visualization | 0/0 | Not started | - |
+| 6. Animated Visualization | 0/2 | Planning complete | - |
 | 7. Summary Dashboard | 0/0 | Not started | - |
 | 8. Export & Sharing | 0/0 | Not started | - |
