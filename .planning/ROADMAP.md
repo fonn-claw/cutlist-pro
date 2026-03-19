@@ -95,11 +95,11 @@ Plans:
   3. Waste/unused areas are visually distinct from placed pieces (different pattern or color)
   4. Hovering over a piece shows a tooltip with its dimensions and label
   5. User can zoom in/out and pan across large layouts
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md — Visualization utilities (contrast text, viewBox) and SVG board diagram components (PieceRect, WasteRect, BoardDiagram, CuttingDiagramList)
+- [ ] 05-02-PLAN.md — Zoom/pan hook, tooltip component, BoardDiagram interactivity, and page.tsx wiring
 
 ### Phase 6: Animated Visualization
 **Goal**: The optimization result plays as an animated sequence where pieces slide into position -- the hero moment
@@ -155,7 +155,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Board Input | 2/2 | Complete   | 2026-03-19 |
 | 3. Cut List Input | 1/2 | In Progress|  |
 | 4. Optimization Engine | 1/2 | In Progress | - |
-| 5. Static Visualization | 0/0 | Not started | - |
+| 5. Static Visualization | 0/2 | Planning complete | - |
 | 6. Animated Visualization | 0/0 | Not started | - |
 | 7. Summary Dashboard | 0/0 | Not started | - |
 | 8. Export & Sharing | 0/0 | Not started | - |
