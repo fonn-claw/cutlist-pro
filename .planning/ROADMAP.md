@@ -64,11 +64,11 @@ Plans:
   3. User can paste a tab/comma-separated list of pieces to bulk-add them
   4. User can duplicate an existing piece entry to create a copy
   5. User can edit or remove any existing cut piece entry
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md — Color palette and cut-operations pure functions with TDD tests
+- [ ] 03-02-PLAN.md — Cut piece UI components (form, entry, list, bulk-add, color swatch) and page state wiring
 
 ### Phase 4: Optimization Engine
 **Goal**: The app can compute optimal guillotine cut layouts that respect kerf width and grain direction
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 |-------|----------------|--------|-----------|
 | 1. Foundation & Design System | 0/2 | Planning complete | - |
 | 2. Board Input | 2/2 | Complete   | 2026-03-19 |
-| 3. Cut List Input | 0/0 | Not started | - |
+| 3. Cut List Input | 0/2 | Planning complete | - |
 | 4. Optimization Engine | 0/0 | Not started | - |
 | 5. Static Visualization | 0/0 | Not started | - |
 | 6. Animated Visualization | 0/0 | Not started | - |
