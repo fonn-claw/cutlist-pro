@@ -79,11 +79,11 @@ Plans:
   2. Kerf (blade width) is configurable with a sensible default (1/8") and the algorithm accounts for kerf gaps between pieces
   3. User can mark pieces with grain direction constraint, and those pieces are never rotated in the layout
   4. Algorithm minimizes board usage -- produces fewer or equal boards compared to naive placement
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — Guillotine bin-packing algorithm with TDD (types, tests, implementation)
+- [ ] 04-02-PLAN.md — Kerf input, Optimize button, and page state wiring for results
 
 ### Phase 5: Static Visualization
 **Goal**: Users see clear, interactive SVG cutting diagrams showing how pieces fit on each board
@@ -154,7 +154,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 1. Foundation & Design System | 0/2 | Planning complete | - |
 | 2. Board Input | 2/2 | Complete   | 2026-03-19 |
 | 3. Cut List Input | 1/2 | In Progress|  |
-| 4. Optimization Engine | 0/0 | Not started | - |
+| 4. Optimization Engine | 0/2 | Planning complete | - |
 | 5. Static Visualization | 0/0 | Not started | - |
 | 6. Animated Visualization | 0/0 | Not started | - |
 | 7. Summary Dashboard | 0/0 | Not started | - |
