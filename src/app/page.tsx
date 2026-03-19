@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Board, CutPiece, OptimizationResult, Settings } from '@/lib/types';
 import { optimizeCutLayout } from '@/lib/optimizer';
 import { addBoard, updateBoard, removeBoard } from '@/lib/board-operations';
 import { addCutPiece, updateCutPiece, removeCutPiece, duplicateCutPiece } from '@/lib/cut-operations';
+import { parseShareUrl } from '@/lib/url-state';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MainArea } from '@/components/layout/MainArea';
@@ -17,6 +18,7 @@ import { BulkAddForm } from '@/components/cuts/BulkAddForm';
 import { KerfInput } from '@/components/settings/KerfInput';
 import { CuttingDiagramList } from '@/components/visualization/CuttingDiagramList';
 import { SummaryDashboard } from '@/components/summary/SummaryDashboard';
+import { ExportToolbar } from '@/components/export/ExportToolbar';
 
 export default function Home() {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -89,6 +91,36 @@ export default function Home() {
     setCutPieces(prev => pieces.reduce((acc, p) => addCutPiece(acc, p), prev));
   }, []);
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#state=')) {
+      const state = parseShareUrl(window.location.href);
+      if (state) {
+        const restoredBoards = state.boards.map(b => ({
+          id: crypto.randomUUID(),
+          dimensions: b.dimensions,
+          quantity: b.quantity,
+        }));
+        const restoredPieces = state.pieces.map(p => ({
+          id: crypto.randomUUID(),
+          dimensions: p.dimensions,
+          quantity: p.quantity,
+          label: p.label,
+          color: p.color,
+          grainDirection: p.grainDirection,
+        }));
+        setBoards(restoredBoards);
+        setCutPieces(restoredPieces);
+        setKerf(state.kerf);
+        const settings: Settings = { units: 'metric', kerf: state.kerf };
+        const result = optimizeCutLayout(restoredBoards, restoredPieces, settings);
+        setOptimizationResult(result);
+        setResultKey(prev => prev + 1);
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+  }, []);
+
   return (
     <div className="h-screen flex flex-col">
       <Header />
@@ -151,12 +183,15 @@ export default function Home() {
           {optimizationResult && (
             <div className="space-y-4">
               <SummaryDashboard boards={boards} result={optimizationResult} />
+              <ExportToolbar boards={boards} pieces={cutPieces} kerf={kerf} />
               {optimizationResult.unplacedPieces.length > 0 && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">
                   Warning: {optimizationResult.unplacedPieces.length} piece(s) could not be placed. Check that your boards are large enough.
                 </div>
               )}
-              <CuttingDiagramList result={optimizationResult} resultKey={resultKey} />
+              <div id="cutting-diagrams">
+                <CuttingDiagramList result={optimizationResult} resultKey={resultKey} />
+              </div>
             </div>
           )}
         </MainArea>
