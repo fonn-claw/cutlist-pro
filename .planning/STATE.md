@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-19T01:31:03.265Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-19T01:45:11.375Z"
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Animated cut layout visualization that clearly shows optimized piece placement on boards, minimizing waste and saving money.
-**Current focus:** Phase 03 — cut-list-input
+**Current focus:** Phase 04 — optimization-engine
 
 ## Current Position
 
-Phase: 03 (cut-list-input) — EXECUTING
-Plan: 1 of 2
+Phase: 04 (optimization-engine) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: 1 of 2
 *Updated after each plan completion*
 | Phase 03-01 Pcut-operations | 2min | 1 tasks | 3 files |
 | Phase 03-cut-list-input P02 | 2min | 3 tasks | 6 files |
+| Phase 04 P01 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 03-01]: ParsedPiece interface local to cut-operations.ts, not shared types
 - [Phase 03-cut-list-input]: Color swatch in view mode calls onSave directly for quick color override without full edit mode
 - [Phase 03-cut-list-input]: Bulk add uses reduce for sequential color cycling across palette
+- [Phase 04]: Full kerf added to each piece dimension for safe layouts
+- [Phase 04]: First Fit Decreasing with Best Short Side Fit and Short Axis Split for guillotine packing
 
 ### Pending Todos
 
@@ -89,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T01:28:26.083Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-19T01:45:11.372Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None

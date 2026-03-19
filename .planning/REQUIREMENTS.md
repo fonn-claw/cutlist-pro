@@ -32,10 +32,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Optimization
 
-- [ ] **OPT-01**: User can run guillotine bin-packing optimization on button click
-- [ ] **OPT-02**: User can configure kerf (blade width) setting with sensible default (1/8")
-- [ ] **OPT-03**: User can mark pieces with grain direction constraint (no rotation)
-- [ ] **OPT-04**: Algorithm produces layouts using only guillotine (straight through) cuts
+- [x] **OPT-01**: User can run guillotine bin-packing optimization on button click
+- [x] **OPT-02**: User can configure kerf (blade width) setting with sensible default (1/8")
+- [x] **OPT-03**: User can mark pieces with grain direction constraint (no rotation)
+- [x] **OPT-04**: Algorithm produces layouts using only guillotine (straight through) cuts
 
 ### Visualization
 
@@ -121,10 +121,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CUT-05 | Phase 3: Cut List Input | Complete |
 | CUT-06 | Phase 3: Cut List Input | Complete |
 | CUT-07 | Phase 3: Cut List Input | Complete |
-| OPT-01 | Phase 4: Optimization Engine | Pending |
-| OPT-02 | Phase 4: Optimization Engine | Pending |
-| OPT-03 | Phase 4: Optimization Engine | Pending |
-| OPT-04 | Phase 4: Optimization Engine | Pending |
+| OPT-01 | Phase 4: Optimization Engine | Complete |
+| OPT-02 | Phase 4: Optimization Engine | Complete |
+| OPT-03 | Phase 4: Optimization Engine | Complete |
+| OPT-04 | Phase 4: Optimization Engine | Complete |
 | VIS-01 | Phase 5: Static Visualization | Pending |
 | VIS-02 | Phase 5: Static Visualization | Pending |
 | VIS-03 | Phase 5: Static Visualization | Pending |
