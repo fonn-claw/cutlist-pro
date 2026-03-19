@@ -7,9 +7,9 @@ import { getContrastTextColor } from '@/lib/visualization-utils';
 interface PieceRectProps {
   piece: PlacedPiece;
   units: UnitSystem;
-  onMouseEnter?: React.MouseEventHandler<SVGGElement>;
-  onMouseMove?: React.MouseEventHandler<SVGGElement>;
-  onMouseLeave?: React.MouseEventHandler<SVGGElement>;
+  onMouseEnter?: (e: React.MouseEvent, piece: PlacedPiece) => void;
+  onMouseMove?: (e: React.MouseEvent) => void;
+  onMouseLeave?: () => void;
 }
 
 export function PieceRect({ piece, units, onMouseEnter, onMouseMove, onMouseLeave }: PieceRectProps) {
@@ -20,11 +20,7 @@ export function PieceRect({ piece, units, onMouseEnter, onMouseMove, onMouseLeav
   const centerY = piece.y + piece.height / 2;
 
   return (
-    <g
-      onMouseEnter={onMouseEnter}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-    >
+    <g>
       <rect
         x={piece.x}
         y={piece.y}
@@ -35,6 +31,9 @@ export function PieceRect({ piece, units, onMouseEnter, onMouseMove, onMouseLeav
         stroke={piece.color}
         strokeWidth={1}
         cursor="pointer"
+        onMouseEnter={(e) => onMouseEnter?.(e, piece)}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
       />
       {showLabel && (
         <>
